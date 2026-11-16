@@ -317,7 +317,7 @@ def check_pass_fail(judge_result: str, expected_label: str) -> str:
 예시 2)  애매한 패턴 입력
   Cross 점수 : 3.0
   X     점수 : 3.
-
+```
 
 --- 
 
