@@ -192,7 +192,7 @@ print(p.to_2d_list())
 #        [0.0, 0.0, 0.0]]
 ```
 
-이미지
+![테스트코드렌더링](./screenshots/테스트코드렌더링.png)
 
 
 ---
@@ -257,6 +257,7 @@ def mac(filter_p: Pattern, input_p: Pattern) -> float:
 
     return result
 ```
+![mac](./screenshots/mac.png)
 
 ---
 
@@ -318,6 +319,8 @@ def check_pass_fail(judge_result: str, expected_label: str) -> str:
   Cross 점수 : 3.0
   X     점수 : 3.
 ```
+
+![judge](./screenshots/judge.png)
 
 --- 
 
@@ -435,6 +438,8 @@ def get_matrix_input(n: int) -> list:
   5행: 0 0 1 0 0
 ```
 
+![input_handler](./screenshots/input_handler.png)
+
 ---
 
 ### STEP 5: `json_loader.py` - 데이터 로드
@@ -528,6 +533,8 @@ def load_data(filepath: str) -> dict:
 
     return {"filters": filters, "patterns": patterns}
 ```
+
+![json_loader](./screenshots/json_loader.png)
 
 ---
 
