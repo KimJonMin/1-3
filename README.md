@@ -48,38 +48,47 @@ AI가 그림을 인식할 때 **"필터"** 라는 도구를 사용합니다.
 > 쉽게 말하면: **"같은 위치끼리 곱하고, 다 더한다"**
 
 ```
-필터:          입력:          곱하기 결과:
-┌─────────┐   ┌─────────┐   ┌──────────────────┐
-│ 0  0  1 │   │ 0  0  1 │   │ 0×0  0×0  1×1   │
-│ 0  1  0 │ × │ 0  1  0 │ = │ 0×0  1×1  0×0   │
-│ 1  0  0 │   │ 1  0  0 │   │ 1×1  0×0  0×0   │
-└─────────┘   └─────────┘   └──────────────────┘
+필터:            입력:            곱하기 결과:
+┌───────────┐   ┌───────────┐   ┌─────────────────────┐
+│  0  0  1  │   │  0  0  1  │   │  0×0   0×0   1×1   │
+│  0  1  0  │ × │  0  1  0  │ = │  0×0   1×1   0×0   │
+│  1  0  0  │   │  1  0  0  │   │  1×1   0×0   0×0   │
+└───────────┘   └───────────┘   └─────────────────────┘
 
 최종 합계: 0+0+1 + 0+1+0 + 1+0+0 = 3.0  ← 이게 MAC 점수!
 ```
 
-개념 2️⃣ : 왜 필터가 필요한가?
 
-Cross 필터로 계산 → Cross 점수: 9.0
-X 필터로 계산     → X 점수:     1.0
+### 개념 2️⃣ : 왜 필터가 필요한가?
 
-9.0 > 1.0 이므로 → "이 그림은 Cross입니다!"
-필터는 "이 모양이 맞으면 점수를 높게 주는 채점표" 입니다.
+```
+Cross 필터로 계산  →  Cross 점수: 9.0   ← 높다!
+X     필터로 계산  →  X     점수: 1.0   ← 낮다!
 
-개념 3️⃣ : 라벨 정규화란?
-JSON 파일에는 "+", "x" 처럼 다양하게 쓰여 있습니다.
-프로그램 안에서는 통일된 이름을 써야 합니다.
+9.0 > 1.0  →  "이 그림은 Cross 입니다!" ✅
+```
 
+필터는 **"이 모양이 맞으면 점수를 높게 주는 채점표"** 입니다.
 
+### 개념 3️⃣ : 라벨 정규화란?
+
+JSON 파일에는 `"+"`, `"x"` 처럼 다양하게 쓰여 있습니다.  
+프로그램 안에서는 **통일된 이름**을 써야 합니다.
+
+```
 JSON에 있는 값    →    프로그램 안에서 쓰는 값
-"+"              →    "Cross"
-"cross"          →    "Cross"
-"x"              →    "X"
-"X"              →    "X"
+─────────────────────────────────────────────
+    "+"          →         "Cross"
+  "cross"        →         "Cross"
+    "x"          →           "X"
+    "X"          →           "X"
+```
 
+---
 
-3. 파일 구조
+## 3. 파일 구조
 
+```
 mini_npu/
 │
 ├── main.py              ← 프로그램 시작점 (여기서 실행!)
@@ -90,29 +99,43 @@ mini_npu/
 ├── json_loader.py       ← data.json 읽기
 ├── performance.py       ← 실행 시간 측정
 └── data.json            ← 테스트 데이터
-💡 파일을 만드는 순서: data_structure → mac → judge → input_handler → json_loader → performance → main
+```
 
+> 💡 **파일 작성 순서:**
+> `data_structure` → `mac` → `judge` → `input_handler` → `json_loader` → `performance` → `main`
 
-4. STEP별 코드 설명
-STEP 1: data_structure.py - 데이터 저장 방식
-🤔 왜 이게 필요한가요?
-5×5 행렬을 저장할 때 2D 리스트를 쓰면 편하지만,
-실제 NPU 하드웨어는 1D(일렬)로 메모리에 저장합니다.
+---
+
+## 4. STEP별 코드 설명
+
+---
+
+### STEP 1: `data_structure.py` - 데이터 저장 방식
+
+#### 🤔 왜 이게 필요한가요?
+
+5×5 행렬을 저장할 때 2D 리스트를 쓰면 편하지만,  
+실제 NPU 하드웨어는 **1D(일렬)로 메모리에 저장**합니다.  
 이 클래스는 그 방식을 흉내냅니다.
 
-📐 2D → 1D 변환 원리
+#### 📐 2D → 1D 변환 원리
 
-2D 행렬:              1D 리스트:
-[1, 2, 3]            [1, 2, 3, 4, 5, 6, 7, 8, 9]
-[4, 5, 6]     →       ↑           ↑           ↑
-[7, 8, 9]           row=0       row=1       row=2
+```
+2D 행렬:              1D 리스트 (실제 저장):
+
+┌───────────┐
+│  1  2  3  │   →   [ 1, 2, 3, 4, 5, 6, 7, 8, 9 ]
+│  4  5  6  │         └─row0─┘  └─row1─┘  └─row2─┘
+│  7  8  9  │
+└───────────┘
 
 위치 계산 공식: index = row × n + col
-예) row=1, col=2, n=3 → index = 1×3+2 = 5 → 값: 6
+예) row=1, col=2, n=3  →  index = 1×3+2 = 5  →  값: 6
+```
 
+#### 💻 코드
 
-💻 코드
-
+```python
 # data_structure.py
 
 class Pattern:
@@ -121,14 +144,11 @@ class Pattern:
     """
 
     def __init__(self, n: int):
-        # n: 행렬의 크기 (예: 5이면 5×5)
-        self.n = n
-        # n×n 크기의 1D 리스트를 0.0으로 초기화
-        self.data = [0.0] * (n * n)
+        self.n    = n
+        self.data = [0.0] * (n * n)   # n×n 크기, 0.0으로 초기화
 
     def set(self, row: int, col: int, value: float):
         """(row, col) 위치에 값을 저장합니다"""
-        # 2D 위치 → 1D 인덱스 변환
         index = row * self.n + col
         self.data[index] = float(value)
 
@@ -139,15 +159,9 @@ class Pattern:
 
     @classmethod
     def load_from_list(cls, grid: list) -> "Pattern":
-        """
-        2D 리스트를 받아서 Pattern 객체를 만듭니다
-        
-        사용 예시:
-        grid = [[0, 1], [1, 0]]
-        p = Pattern.load_from_list(grid)
-        """
-        n = len(grid)           # 행 개수 = 크기
-        pattern = cls(n)        # Pattern 객체 생성
+        """2D 리스트를 받아서 Pattern 객체를 만듭니다"""
+        n       = len(grid)
+        pattern = cls(n)
         for r in range(n):
             for c in range(n):
                 pattern.set(r, c, grid[r][c])
@@ -162,30 +176,61 @@ class Pattern:
 
     def __repr__(self):
         return f"Pattern(n={self.n})"
+```
 
+#### ✅ 테스트 해보기
 
-✅ 테스트 해보기
-
-# 터미널에서 python 실행 후 테스트
-
+```python
 p = Pattern(3)
-p.set(0, 0, 1.0)   # 0행 0열에 1.0 저장
-p.set(1, 1, 1.0)   # 1행 1열에 1.0 저장
-print(p.get(0, 0)) # 출력: 1.0
-print(p.get(0, 1)) # 출력: 0.0
+p.set(0, 0, 1.0)
+p.set(1, 1, 1.0)
+print(p.get(0, 0))      # 출력: 1.0
+print(p.get(0, 1))      # 출력: 0.0
+print(p.to_2d_list())
+# 출력: [[1.0, 0.0, 0.0],
+#        [0.0, 1.0, 0.0],
+#        [0.0, 0.0, 0.0]]
+```
 
-# load_from_list 테스트
-grid = [[1, 0], [0, 1]]
-p2 = Pattern.load_from_list(grid)
-print(p2.to_2d_list())  # 출력: [[1.0, 0.0], [0.0, 1.0]]
+---
 
+### STEP 2: `mac.py` - 핵심 연산
 
-STEP 2: mac.py - 핵심 연산
-🤔 이 함수가 하는 일
+#### 🤔 이 함수가 하는 일
 
-filter의 각 위치 값  ×  input의 같은 위치 값  →  다 더하기
+```
+filter의 각 위치 값  ×  input의 같은 위치 값  →  전부 더하기  →  점수
+```
 
-💻 코드
+#### 손으로 계산해서 확인하기
+
+```
+Cross 필터 (5×5):              Cross 패턴 입력:
+┌─────────────────────────┐    ┌─────────────────────────┐
+│  0    0    1    0    0  │    │  0    0    1    0    0  │
+│  0    0    1    0    0  │    │  0    0    1    0    0  │
+│  1    1   0.9   1    1  │  × │  1    1    1    1    1  │
+│  0    0    1    0    0  │    │  0    0    1    0    0  │
+│  0    0    1    0    0  │    │  0    0    1    0    0  │
+└─────────────────────────┘    └─────────────────────────┘
+
+0이 아닌 곱만 표시:
+  (0,2): 1 × 1 = 1.0
+  (1,2): 1 × 1 = 1.0
+  (2,0): 1 × 1 = 1.0
+  (2,1): 1 × 1 = 1.0
+  (2,2): 0.9 × 1 = 0.9   ← 중심은 0.9!
+  (2,3): 1 × 1 = 1.0
+  (2,4): 1 × 1 = 1.0
+  (3,2): 1 × 1 = 1.0
+  (4,2): 1 × 1 = 1.0
+
+합계 = 8.9  ← Cross 점수
+```
+
+#### 💻 코드
+
+```python
 # mac.py
 
 from data_structure import Pattern
@@ -193,122 +238,110 @@ from data_structure import Pattern
 def mac(filter_p: Pattern, input_p: Pattern) -> float:
     """
     MAC(Multiply-Accumulate) 연산
-    
-    filter_p: 필터 Pattern 객체
-    input_p : 입력 Pattern 객체
-    반환값  : 두 행렬의 원소별 곱의 합 (float)
+    반환값: 두 행렬의 원소별 곱의 합 (float)
     """
-    # 크기가 다르면 계산 불가
     if filter_p.n != input_p.n:
         raise ValueError(
             f"크기가 달라요! filter={filter_p.n}, input={input_p.n}"
         )
 
-    n = filter_p.n
-    result = 0.0  # 누적 합산 변수
+    n      = filter_p.n
+    result = 0.0
 
-    # 이중 for문으로 모든 위치를 순회
     for r in range(n):
         for c in range(n):
-            # 같은 위치의 값을 곱해서 result에 더함
             result += filter_p.get(r, c) * input_p.get(r, c)
 
     return result
+```
 
+---
 
-✅ 손으로 계산해서 확인하기
+### STEP 3: `judge.py` - 판정
 
-Cross 필터 (5×5):          Cross 패턴 입력:
-0  0  1  0  0              0  0  1  0  0
-0  0  1  0  0              0  0  1  0  0
-1  1  0.9 1  1     ×       1  1  1  1  1
-0  0  1  0  0              0  0  1  0  0
-0  0  1  0  0              0  0  1  0  0
+#### 🤔 판정 흐름
 
-계산:
-- (0,2): 1×1 = 1.0
-- (1,2): 1×1 = 1.0
-- (2,0): 1×1 = 1.0
-- (2,1): 1×1 = 1.0
-- (2,2): 0.9×1 = 0.9  ← 중심은 0.9!
-- (2,3): 1×1 = 1.0
-- (2,4): 1×1 = 1.0
-- (3,2): 1×1 = 1.0
-- (4,2): 1×1 = 1.0
-나머지는 모두 0
+```
+Cross 점수  vs  X 점수
+──────────────────────────────────────────
+Cross 점수 > X 점수   →   결과: "Cross"
+Cross 점수 < X 점수   →   결과: "X"
+Cross 점수 = X 점수   →   결과: "UNDECIDED"
+```
 
-합계 = 8.9  ← Cross 점수
+#### 💻 코드
 
-
-STEP 3: judge.py - 판정
-🤔 이 함수가 하는 일
-
-Cross 점수 vs X 점수 비교
-→ 높은 쪽이 이긴다!
-→ 같으면 UNDECIDED (판정 불가)
-
-💻 코드
+```python
 # judge.py
 
 def judge(score_cross: float, score_x: float, epsilon: float = 1e-9) -> str:
     """
     두 점수를 비교해 판정 결과를 반환합니다
-    
-    score_cross : Cross 필터로 계산한 점수
-    score_x     : X 필터로 계산한 점수
-    epsilon     : 동점 판정 기준 (매우 작은 수)
-    
-    반환값: 'Cross', 'X', 'UNDECIDED' 중 하나
+    반환값: 'Cross' / 'X' / 'UNDECIDED'
     """
     diff = score_cross - score_x
 
-    # abs()는 절댓값 함수
-    # 두 점수 차이가 아주 작으면 동점으로 봄
     if abs(diff) < epsilon:
         return "UNDECIDED"
     elif diff > 0:
-        return "Cross"   # Cross 점수가 더 높음
+        return "Cross"
     else:
-        return "X"       # X 점수가 더 높음
+        return "X"
 
 
 def check_pass_fail(judge_result: str, expected_label: str) -> str:
     """
     판정 결과와 정답을 비교해 PASS/FAIL을 반환합니다
-    
-    judge_result  : judge() 함수의 반환값
-    expected_label: 정규화된 정답 라벨 ('Cross' 또는 'X')
-    
-    반환값: 'PASS' 또는 'FAIL'
     """
     if judge_result == "UNDECIDED":
-        return "FAIL"   # 판정 못하면 무조건 FAIL
+        return "FAIL"
     elif judge_result == expected_label:
-        return "PASS"   # 정답과 일치
+        return "PASS"
     else:
-        return "FAIL"   # 정답과 불일치
+        return "FAIL"
+```
 
-✅ 판정 흐름 예시
+#### ✅ 판정 예시
 
-예시 1) Cross 패턴 입력
-  Cross 점수: 8.9
-  X 점수    : 0.0
-  → judge()  : "Cross"
-  → 정답     : "Cross"
-  → PASS ✅
+```
+예시 1)  Cross 패턴 입력
+  Cross 점수 : 8.9
+  X     점수 : 0.0
+  judge()    : "Cross"
+  정답       : "Cross"
+  결과       : PASS ✅
 
-예시 2) 애매한 패턴 입력
-  Cross 점수: 3.0
-  X 점수    : 3.0
-  → judge()  : "UNDECIDED"
-  → FAIL ❌
+예시 2)  애매한 패턴 입력
+  Cross 점수 : 3.0
+  X     점수 : 3.
 
+  ### STEP 4: `input_handler.py` - 사용자 입력
 
-STEP 4: input_handler.py - 사용자 입력
-🤔 이 함수가 하는 일
+#### 🤔 이 함수가 하는 일
 
-사용자가 숫자를 잘못 입력해도 프로그램이 죽지 않고
-"다시 입력하세요"라고 안내합니다.
+```
+사용자가 잘못 입력해도 프로그램이 죽지 않고
+"다시 입력하세요" 라고 안내합니다.
+```
+
+#### 입력 검증 흐름
+
+```
+사용자 입력
+     │
+     ▼
+숫자인가? ──── NO ──→ "숫자를 입력하세요" → 다시 입력
+     │
+    YES
+     │
+     ▼
+유효한 크기인가? ── NO ──→ "5, 13, 25 중 하나를 입력하세요" → 다시 입력
+     │
+    YES
+     │
+     ▼
+입력 완료!
+```
 
 #### 💻 코드
 
@@ -317,310 +350,256 @@ STEP 4: input_handler.py - 사용자 입력
 
 def get_size_input(valid_sizes: list) -> int:
     """
-    사용자로부터 패턴 크기(N)를 입력받습니다
-    
-    valid_sizes: 허용되는 크기 목록 (예: [5, 13, 25])
-    반환값     : 선택한 크기 (int)
-    
-    잘못 입력하면 다시 물어봅니다
+    유효한 크기(5, 13, 25)를 입력받을 때까지 반복합니다
     """
-    while True:  # 올바른 입력이 들어올 때까지 반복
-        raw = input(f"패턴 크기를 입력하세요 {valid_sizes}: ").strip()
-        try:
-            n = int(raw)  # 문자열 → 정수 변환 시도
-            if n in valid_sizes:
-                return n  # 올바른 값이면 반환
-            else:
-                print(f"  ⚠ {valid_sizes} 중 하나를 입력하세요.")
-        except ValueError:
-            # int() 변환 실패 시 (예: "abc" 입력)
-            print("  ⚠ 숫자(정수)를 입력하세요.")
+    size_str = ", ".join(str(s) for s in valid_sizes)  # "5, 13, 25"
+
+    while True:
+        raw = input(f"\n  패턴 크기를 입력하세요 ({size_str}): ").strip()
+
+        # 1) 숫자인지 확인
+        if not raw.isdigit():
+            print(f"  ⚠ 숫자를 입력하세요. (예: 5)")
+            continue
+
+        n = int(raw)
+
+        # 2) 유효한 크기인지 확인
+        if n not in valid_sizes:
+            print(f"  ⚠ {size_str} 중 하나를 입력하세요.")
+            continue
+
+        return n
 
 
 def get_matrix_input(n: int) -> list:
     """
-    사용자로부터 n×n 행렬을 입력받습니다
-    
-    n      : 행렬 크기
-    반환값 : 2D 리스트 (float)
-    
-    입력 예시 (5×5):
-      행 1/5: 1.0 0.0 0.0 0.0 1.0
-      행 2/5: 0.0 1.0 0.0 1.0 0.0
-      ...
+    n×n 행렬을 한 줄씩 입력받습니다
+    반환값: 2D 리스트 (float)
     """
-    print(f"\n{n}×{n} 행렬을 입력하세요.")
-    print(f"각 행마다 공백으로 구분해서 {n}개 숫자를 입력하세요.")
-    print(f"예시: 1.0 0.0 0.0 0.0 1.0\n")
+    print(f"\n  {n}×{n} 행렬을 입력하세요.")
+    print(f"  (한 줄에 {n}개 숫자를 공백으로 구분)")
+    print(f"  예) 0 0 1 0 0")
 
     grid = []
-    r = 0
-    while r < n:  # n개 행을 모두 입력받을 때까지 반복
-        raw = input(f"  행 {r+1}/{n}: ").strip()
-        try:
-            # 공백으로 나눠서 각각 float으로 변환
-            row = [float(x) for x in raw.split()]
 
-            if len(row) != n:
-                # 숫자 개수가 맞지 않으면 재입력
-                print(f"  ⚠ {n}개의 숫자가 필요합니다. "
-                      f"(지금 입력: {len(row)}개) 다시 입력하세요.")
-                continue  # r을 증가시키지 않고 다시 입력받음
+    for r in range(n):
+        while True:
+            raw = input(f"  {r+1}행: ").strip()
+            tokens = raw.split()
+
+            # 1) 개수 확인
+            if len(tokens) != n:
+                print(f"  ⚠ {n}개의 숫자를 입력하세요. (현재 {len(tokens)}개)")
+                continue
+
+            # 2) 숫자인지 확인
+            try:
+                row = [float(t) for t in tokens]
+            except ValueError:
+                print(f"  ⚠ 숫자만 입력하세요.")
+                continue
 
             grid.append(row)
-            r += 1  # 성공적으로 입력받으면 다음 행으로
-
-        except ValueError:
-            # float() 변환 실패 시 (예: "a b c" 입력)
-            print("  ⚠ 숫자만 입력 가능합니다. 다시 입력하세요.")
+            break
 
     return grid
+```
 
+#### ✅ 입력 예시
 
-✅ 입력 흐름 예시
+```
+패턴 크기를 입력하세요 (5, 13, 25): abc
+  ⚠ 숫자를 입력하세요. (예: 5)
 
-패턴 크기를 입력하세요 [5, 13, 25]: abc
-  ⚠ 숫자(정수)를 입력하세요.
-패턴 크기를 입력하세요 [5, 13, 25]: 7
-  ⚠ [5, 13, 25] 중 하나를 입력하세요.
-패턴 크기를 입력하세요 [5, 13, 25]: 5   ← 올바른 입력!
+패턴 크기를 입력하세요 (5, 13, 25): 7
+  ⚠ 5, 13, 25 중 하나를 입력하세요.
+
+패턴 크기를 입력하세요 (5, 13, 25): 5
+  ✅ 5 선택됨
 
 5×5 행렬을 입력하세요.
-  행 1/5: 1.0 0.0        ← 숫자 부족!
-  ⚠ 5개의 숫자가 필요합니다. (지금 입력: 2개) 다시 입력하세요.
-  행 1/5: 1.0 0.0 0.0 0.0 1.0   ← 올바른 입력!
-  행 2/5: ...
+(한 줄에 5개 숫자를 공백으로 구분)
+예) 0 0 1 0 0
 
+  1행: 0 0 1 0 0
+  2행: 0 0 1 0 0
+  3행: 1 1 1 1 1
+  4행: 0 0 1 0 0
+  5행: 0 0 1 0 0
+```
 
-STEP 5: json_loader.py - JSON 파일 읽기
+---
 
-🤔 data.json 구조 다시 보기
+### STEP 5: `json_loader.py` - 데이터 로드
 
-data.json
-├── filters
-│   ├── size_5
-│   │   ├── cross  ← 5×5 Cross 필터
-│   │   └── x      ← 5×5 X 필터
-│   ├── size_13
-│   │   ├── cross  ← 13×13 Cross 필터
-│   │   └── x      ← 13×13 X 필터
-│   └── size_25
-│       ├── cross  ← 25×25 Cross 필터
-│       └── x      ← 25×25 X 필터
-└── patterns
-    ├── size_5_1   → expected: "x"  (정규화 후 "X")
-    ├── size_5_2   → expected: "+"  (정규화 후 "Cross")
-    ├── size_13_1  → expected: "x"
-    ├── size_13_2  → expected: "+"
-    ├── size_25_1  → expected: "x"
-    └── size_25_2  → expected: "+"
-🔑 키 이름에서 숫자 추출하는 법
+#### 🤔 이 함수가 하는 일
 
-# "size_5"  → split("_") → ["size", "5"]  → [1] → "5" → int → 5
-# "size_13" → split("_") → ["size", "13"] → [1] → "13" → int → 13
-# "size_25" → split("_") → ["size", "25"] → [1] → "25" → int → 25
+```
+data.json 파일
+      │
+      ▼
+파일 읽기 (json.load)
+      │
+      ▼
+filters  → 크기별로 Pattern 객체 2개 생성 (Cross, X)
+patterns → 패턴마다 Pattern 객체 + expected 라벨 생성
+      │
+      ▼
+딕셔너리로 반환
+```
 
-size_key = "size_13"
-n = int(size_key.split("_")[1])  # → 13
+#### 💻 코드
 
-💻 코드
-
+```python
 # json_loader.py
 
 import json
 from data_structure import Pattern
 
-# ── 라벨 정규화 테이블 ──────────────────────────
-# JSON에 있는 다양한 표현을 통일된 이름으로 바꿉니다
+# ── 라벨 정규화 테이블 ──────────────────────────────────────
 LABEL_MAP = {
-    "+":     "Cross",
-    "cross": "Cross",
-    "Cross": "Cross",
-    "CROSS": "Cross",
-    "x":     "X",
-    "X":     "X",
+    "+":      "Cross",
+    "cross":  "Cross",
+    "Cross":  "Cross",
+    "CROSS":  "Cross",
+    "x":      "X",
+    "X":      "X",
 }
-
 
 def normalize_label(raw: str) -> str:
     """
-    다양한 라벨을 'Cross' 또는 'X'로 정규화합니다
-    
-    예시:
-      normalize_label("+")     → "Cross"
-      normalize_label("cross") → "Cross"
-      normalize_label("x")     → "X"
+    JSON의 다양한 라벨을 'Cross' 또는 'X' 로 통일합니다
     """
-    result = LABEL_MAP.get(raw)
-    if result is None:
+    label = LABEL_MAP.get(raw.strip())
+    if label is None:
         raise ValueError(f"알 수 없는 라벨입니다: '{raw}'")
-    return result
+    return label
 
 
-def load_data(filepath: str = "data.json") -> dict:
+def load_data(filepath: str) -> dict:
     """
-    data.json을 읽어서 필터와 패턴을 반환합니다
-    
+    data.json을 읽어서 filters와 patterns를 반환합니다
+
     반환 형식:
     {
         "filters": {
-            5:  {"Cross": Pattern객체, "X": Pattern객체},
-            13: {"Cross": Pattern객체, "X": Pattern객체},
-            25: {"Cross": Pattern객체, "X": Pattern객체},
+            5:  {"Cross": Pattern, "X": Pattern},
+            13: {"Cross": Pattern, "X": Pattern},
+            25: {"Cross": Pattern, "X": Pattern},
         },
         "patterns": [
-            {
-                "name"    : "size_5_1",
-                "n"       : 5,
-                "pattern" : Pattern객체,
-                "expected": "X"          ← 정규화된 라벨
-            },
+            {"name": "size_5_1", "pattern": Pattern, "expected": "Cross"},
             ...
         ]
     }
     """
-    # ── JSON 파일 열기 ──────────────────────────
+    # 1) 파일 읽기
     try:
         with open(filepath, "r", encoding="utf-8") as f:
-            raw = json.load(f)  # JSON → 파이썬 딕셔너리
+            raw = json.load(f)
     except FileNotFoundError:
-        raise FileNotFoundError(
-            f"파일을 찾을 수 없습니다: '{filepath}'\n"
-            f"main.py와 같은 폴더에 data.json이 있는지 확인하세요."
-        )
-    except json.JSONDecodeError as e:
-        raise ValueError(f"JSON 형식이 잘못되었습니다: {e}")
+        raise FileNotFoundError(f"파일을 찾을 수 없습니다: '{filepath}'")
 
-    # ── 필터 로드 ───────────────────────────────
+    # 2) filters 변환
     filters = {}
+    for key, val in raw["filters"].items():
+        # key 예시: "size_5" → n = 5
+        n = int(key.split("_")[1])
+        filters[n] = {
+            "Cross": Pattern.load_from_list(val["cross"]),
+            "X":     Pattern.load_from_list(val["x"]),
+        }
 
-    for size_key, shape_dict in raw["filters"].items():
-        # "size_5" → 5, "size_13" → 13, "size_25" → 25
-        n = int(size_key.split("_")[1])
-        filters[n] = {}
-
-        for shape_key, grid in shape_dict.items():
-            # shape_key: "cross" 또는 "x"
-            # grid: 2D 리스트 (JSON에서 읽은 값)
-            label = normalize_label(shape_key)  # "cross" → "Cross"
-            filters[n][label] = Pattern.load_from_list(grid)
-
-    # ── 패턴 로드 ───────────────────────────────
+    # 3) patterns 변환
     patterns = []
-
-    for pat_name, pat_data in raw["patterns"].items():
-        # "size_5_1"  → split("_") → ["size","5","1"] → [1] → 5
-        # "size_13_2" → split("_") → ["size","13","2"] → [1] → 13
-        n = int(pat_name.split("_")[1])
-
-        pattern_obj = Pattern.load_from_list(pat_data["input"])
-        expected    = normalize_label(pat_data["expected"])
-
+    for name, val in raw["patterns"].items():
         patterns.append({
-            "name"    : pat_name,
-            "n"       : n,
-            "pattern" : pattern_obj,
-            "expected": expected,
+            "name":     name,
+            "pattern":  Pattern.load_from_list(val["input"]),
+            "expected": normalize_label(val["expected"]),
         })
 
     return {"filters": filters, "patterns": patterns}
+```
 
+---
 
-✅ 로드 결과 확인하기
+### STEP 6: `performance.py` - 성능 측정
 
-# 터미널에서 테스트
-from json_loader import load_data
+#### 🤔 이 함수가 하는 일
 
-data = load_data("data.json")
+```
+MAC 연산을 100번 반복 실행
+         │
+         ▼
+총 걸린 시간 ÷ 100
+         │
+         ▼
+평균 실행 시간 (ms) 반환
+```
 
-# 필터 확인
-print(data["filters"].keys())       # dict_keys([5, 13, 25])
-print(data["filters"][5]["Cross"])  # Pattern(n=5)
+#### 💻 코드
 
-# 패턴 확인
-for p in data["patterns"]:
-    print(p["name"], p["n"], p["expected"])
-
-# 출력 예시:
-# size_5_1  5  X
-# size_5_2  5  Cross
-# size_13_1 13 X
-# size_13_2 13 Cross
-# size_25_1 25 X
-# size_25_2 25 Cross
-
-
-STEP 6: performance.py - 실행 시간 측정
-🤔 왜 시간을 측정하나요?
-NPU(Neural Processing Unit)는 속도가 중요합니다.
-같은 연산을 여러 번 반복해서 평균 시간을 구합니다.
-
-
-repeat=100 이면:
-MAC 연산을 100번 실행 → 총 시간 ÷ 100 = 평균 시간(ms)
-💻 코드
-
+```python
 # performance.py
 
 import time
 from data_structure import Pattern
 from mac import mac
 
-
 def measure_performance(
     filter_p: Pattern,
-    input_p : Pattern,
-    repeat  : int = 100
+    input_p:  Pattern,
+    repeat:   int = 100
 ) -> float:
     """
-    MAC 연산을 repeat번 반복해서 평균 실행 시간을 반환합니다
-    
-    filter_p : 필터 Pattern 객체
-    input_p  : 입력 Pattern 객체
-    repeat   : 반복 횟수 (기본값: 100)
-    반환값   : 평균 실행 시간 (밀리초, ms)
-    
-    예시:
-      avg_ms = measure_performance(f_cross, pat, repeat=100)
-      print(f"{avg_ms:.6f} ms")  → 0.002341 ms
+    MAC 연산을 repeat번 반복해서 평균 실행 시간(ms)을 반환합니다
     """
-    start = time.perf_counter()  # 시작 시간 기록
+    start = time.perf_counter()
 
     for _ in range(repeat):
-        mac(filter_p, input_p)   # repeat번 반복 실행
+        mac(filter_p, input_p)
 
-    end = time.perf_counter()    # 종료 시간 기록
+    end = time.perf_counter()
 
-    total_sec = end - start                  # 총 걸린 시간 (초)
-    avg_ms    = (total_sec / repeat) * 1000  # 평균 시간 (밀리초)
+    total_ms  = (end - start) * 1000   # 초 → 밀리초
+    avg_ms    = total_ms / repeat
 
     return avg_ms
+```
 
+#### ✅ 출력 예시
 
-STEP 7: main.py - 전체 통합
-🤔 main.py가 하는 일
+```
+평균 시간: 0.002341 ms
+```
 
-프로그램 시작
-    ↓
-모드 선택 화면 출력
-    ↓
-모드 1 선택 → JSON 패턴 자동 검사
-모드 2 선택 → 사용자가 직접 입력해서 검사
-모드 3 선택 → 종료
+---
 
-💻 코드
+### STEP 7: `main.py` - 전체 조립
 
+#### 🤔 이 파일이 하는 일
+
+```
+모든 모듈을 불러와서
+사용자와 대화하며 프로그램을 실행합니다
+```
+
+#### 💻 코드
+
+```python
 # main.py
 
-from json_loader   import load_data
-from data_structure import Pattern
+from json_loader    import load_data
 from mac            import mac
 from judge          import judge, check_pass_fail
-from input_handler  import get_matrix_input, get_size_input
+from input_handler  import get_size_input, get_matrix_input
 from performance    import measure_performance
+from data_structure import Pattern
 
 
-# ── 모드 1: JSON 자동 검사 ──────────────────────────────────
+# ── 모드 1: 자동 배치 검사 ──────────────────────────────────
 def run_mode1(data: dict):
     """data.json의 모든 패턴을 자동으로 검사합니다"""
 
@@ -631,25 +610,17 @@ def run_mode1(data: dict):
     filters  = data["filters"]
     patterns = data["patterns"]
 
-    total  = 0
-    passed = 0
-    failed = 0
+    total = passed = failed = 0
 
     for item in patterns:
         name     = item["name"]
-        n        = item["n"]
         pat      = item["pattern"]
         expected = item["expected"]
+        n        = pat.n
 
-        # 해당 크기의 필터가 없으면 건너뜀
-        if n not in filters:
-            print(f"[{name}] ⚠ 크기 {n}에 맞는 필터 없음 → SKIP")
-            continue
-
-        f_cross = filters[n]["Cross"]
-        f_x     = filters[n]["X"]
-
-        # MAC 연산으로 점수 계산
+        # MAC 연산
+        f_cross     = filters[n]["Cross"]
+        f_x         = filters[n]["X"]
         score_cross = mac(f_cross, pat)
         score_x     = mac(f_x,     pat)
 
@@ -661,10 +632,10 @@ def run_mode1(data: dict):
         avg_ms = measure_performance(f_cross, pat, repeat=100)
 
         # 결과 출력
-        print(f"\n[{name}]")
+        print(f"\n  [{name}]")
         print(f"  크기       : {n}×{n}")
         print(f"  Cross 점수 : {score_cross:.4f}")
-        print(f"  X 점수     : {score_x:.4f}")
+        print(f"  X     점수 : {score_x:.4f}")
         print(f"  판정       : {result}")
         print(f"  정답       : {expected}")
         print(f"  결과       : {pass_fail}")
@@ -691,7 +662,7 @@ def run_mode2(data: dict):
     print("=" * 50)
 
     filters     = data["filters"]
-    valid_sizes = sorted(filters.keys())  # [5, 13, 25]
+    valid_sizes = sorted(filters.keys())   # [5, 13, 25]
 
     while True:
         # 1) 크기 선택
@@ -702,9 +673,8 @@ def run_mode2(data: dict):
         pat  = Pattern.load_from_list(grid)
 
         # 3) MAC 연산
-        f_cross = filters[n]["Cross"]
-        f_x     = filters[n]["X"]
-
+        f_cross     = filters[n]["Cross"]
+        f_x         = filters[n]["X"]
         score_cross = mac(f_cross, pat)
         score_x     = mac(f_x,     pat)
 
@@ -716,11 +686,11 @@ def run_mode2(data: dict):
 
         # 6) 결과 출력
         print(f"\n  Cross 점수 : {score_cross:.4f}")
-        print(f"  X 점수     : {score_x:.4f}")
+        print(f"  X     점수 : {score_x:.4f}")
         print(f"  판정 결과  : {result}")
         print(f"  평균 시간  : {avg_ms:.6f} ms")
 
-        # 7) 계속 할지 물어보기
+        # 7) 계속 여부
         again = input("\n  다시 입력하시겠습니까? (y/n): ").strip().lower()
         if again != "y":
             break
@@ -760,186 +730,218 @@ def main():
         elif choice == "2":
             run_mode2(data)
         elif choice == "3":
-            print("\n프로그램을 종료합니다. 수고하셨습니다! 👋")
+            print("\n  프로그램을 종료합니다. 수고하셨습니다! 👋")
             break
         else:
             print("  ⚠ 1, 2, 3 중 하나를 입력하세요.")
 
 
-# ── 프로그램 시작점 ─────────────────────────────────────────
 if __name__ == "__main__":
     main()
+```
 
-5. data.json 읽는 법
-📄 실제 JSON 구조와 코드 연결
+---
 
-data.json                          파이썬 코드
-─────────────────────────────────────────────────────
+## 5. data.json 읽는 법
+
+### 📄 JSON 구조와 코드 연결
+
+```
+data.json 구조                     파이썬에서 접근하는 방법
+─────────────────────────────────────────────────────────
 {
   "filters": {
-    "size_5": {                 →  filters[5]
-      "cross": [[...], ...]    →  filters[5]["Cross"]  (Pattern 객체)
-      "x":     [[...], ...]    →  filters[5]["X"]      (Pattern 객체)
+    "size_5": {               →   filters[5]
+      "cross": [[...], ...]   →   filters[5]["Cross"]  (Pattern 객체)
+      "x":     [[...], ...]   →   filters[5]["X"]      (Pattern 객체)
     },
-    "size_13": { ... }         →  filters[13]
-    "size_25": { ... }         →  filters[25]
+    "size_13": { ... }        →   filters[13]
+    "size_25": { ... }        →   filters[25]
   },
   "patterns": {
-    "size_5_1": {              →  patterns[0]
-      "input":    [[...], ...] →  patterns[0]["pattern"]  (Pattern 객체)
-      "expected": "x"          →  patterns[0]["expected"] = "X" (정규화)
+    "size_5_1": {             →   patterns[0]
+      "input":    [[...], ...]  →   patterns[0]["pattern"]  (Pattern 객체)
+      "expected": "+"           →   patterns[0]["expected"] → "Cross"
     },
-    ...
+    "size_5_2": { ... }       →   patterns[1]
   }
 }
+```
 
+### 📌 자주 헷갈리는 부분
 
-🔄 라벨 정규화 흐름
+```
+❌ 틀린 접근:  raw["filters"]["5"]        ← 문자열 "5" 로 접근하면 KeyError!
+✅ 올바른 접근: raw["filters"]["size_5"]  ← JSON 키는 "size_5" 형태
 
-JSON 값    normalize_label()    프로그램 내부
-─────────────────────────────────────────────
-"+"      ──────────────────→   "Cross"
-"cross"  ──────────────────→   "Cross"
-"x"      ──────────────────→   "X"
-"X"      ──────────────────→   "X"
+❌ 틀린 접근:  filters["size_5"]          ← 변환 후에는 정수 키!
+✅ 올바른 접근: filters[5]               ← 변환 후에는 정수 5 로 접근
+```
 
+---
 
-6. 전체 흐름 한눈에 보기
+## 6. 전체 흐름 한눈에 보기
 
+```
 프로그램 시작 (main.py)
         │
         ▼
 data.json 로드 (json_loader.py)
-  ├── filters  → Pattern 객체로 변환
-  └── patterns → Pattern 객체로 변환
+        │
+        ├── filters  → {5: {Cross: Pattern, X: Pattern}, ...}
+        └── patterns → [{name, pattern, expected}, ...]
         │
         ▼
 모드 선택
-  ├── 모드 1: 자동 검사
-  │     │
-  │     ▼
-  │   패턴 하나씩 꺼내기
-  │     │
-  │     ▼
-  │   MAC 연산 (mac.py)
-  │   ├── score_cross = mac(f_cross, pat)
-  │   └── score_x     = mac(f_x,     pat)
-  │     │
-  │     ▼
-  │   판정 (judge.py)
-  │   ├── judge()          → "Cross" / "X" / "UNDECIDED"
-  │   └── check_pass_fail() → "PASS" / "FAIL"
-  │     │
-  │     ▼
-  │   성능 측정 (performance.py)
-  │   └── measure_performance() → 평균 ms
-  │     │
-  │     ▼
-  │   결과 출력
-  │
-  └── 모드 2: 수동 검사
         │
-        ▼
-      크기 입력 (input_handler.py)
+        ├── 모드 1: 자동 배치 검사
+        │       │
+        │       ▼
+        │   patterns 순서대로 반복
+        │       │
+        │       ▼
+        │   MAC 연산 (mac.py)
+        │   score_cross = mac(filter_cross, pattern)
+        │   score_x     = mac(filter_x,     pattern)
+        │       │
+        │       ▼
+        │   판정 (judge.py)
+        │   score_cross vs score_x → "Cross" / "X" / "UNDECIDED"
+        │       │
+        │       ▼
+        │   PASS / FAIL 확인
+        │   judge_result == expected → PASS ✅
+        │   judge_result != expected → FAIL ❌
+        │       │
+        │       ▼
+        │   성능 측정 (performance.py)
+        │   MAC 100번 반복 → 평균 시간(ms)
         │
-        ▼
-      행렬 입력 (input_handler.py)
-        │
-        ▼
-      MAC → 판정 → 성능 측정 → 결과 출력
-        │
-        ▼
-      다시 할지 선택
+        └── 모드 2: 수동 입력 검사
+                │
+                ▼
+            크기 입력 (input_handler.py)
+            5 / 13 / 25 중 선택
+                │
+                ▼
+            행렬 입력 (input_handler.py)
+            n×n 숫자 직접 입력
+                │
+                ▼
+            MAC 연산 → 판정 → 성능 측정
+                │
+                ▼
+            결과 출력
+```
 
+---
 
-7. 자주 하는 실수
-❌ 실수 1: 파일 위치 오류
-오류 메시지:
-  FileNotFoundError: 파일을 찾을 수 없습니다: 'data.json'
+## 7. 자주 하는 실수
 
-원인:
-  main.py와 data.json이 다른 폴더에 있음
+### 실수 1️⃣ : JSON 키 접근 오류
 
-해결:
-  mini_npu/
-  ├── main.py       ← 여기서 실행
-  ├── data.json     ← 같은 폴더에 있어야 함
-  └── ...
+```python
+# ❌ 틀린 코드
+n = 5
+filters[n]          # KeyError! JSON 로드 직후엔 키가 "size_5"
 
-❌ 실수 2: import 오류
-오류 메시지:
-  ModuleNotFoundError: No module named 'data_structure'
+# ✅ 올바른 코드
+# json_loader.py 에서 변환 후
+filters[5]          # 정수 키로 접근
+```
 
-원인:
-  파일 이름이 다르거나 같은 폴더에 없음
+### 실수 2️⃣ : 라벨 비교 오류
 
-해결:
-  모든 .py 파일이 같은 폴더에 있는지 확인
-  파일 이름 오타 확인 (data_structure.py ← 언더바!)
+```python
+# ❌ 틀린 코드
+if result == "+":       # JSON 원본값으로 비교하면 항상 FAIL!
 
-❌ 실수 3: 크기 불일치 오류
-오류 메시지:
-  ValueError: 크기가 달라요! filter=5, input=13
+# ✅ 올바른 코드
+if result == "Cross":   # 정규화된 값으로 비교
+```
 
-원인:
-  5×5 필터로 13×13 패턴을 계산하려 함
+### 실수 3️⃣ : Pattern 인덱스 계산 오류
 
-해결:
-  패턴의 n값과 필터의 n값이 같은지 확인
-  json_loader.py에서 n을 올바르게 추출했는지 확인
+```python
+# ❌ 틀린 코드
+index = row + col       # 행 정보가 사라짐!
 
-❌ 실수 4: 라벨 오류
-오류 메시지:
-  ValueError: 알 수 없는 라벨입니다: 'Cross Shape'
+# ✅ 올바른 코드
+index = row * self.n + col
+```
 
-원인:
-  LABEL_MAP에 없는 라벨이 JSON에 있음
+### 실수 4️⃣ : float 변환 누락
 
-해결:
-  LABEL_MAP에 해당 라벨 추가
-  예) "Cross Shape": "Cross"
+```python
+# ❌ 틀린 코드
+self.data[index] = value        # int가 들어오면 타입 불일치
 
-❌ 실수 5: 외부 라이브러리 사용
-# ❌ 금지! numpy 사용
-import numpy as np
-result = np.dot(filter_arr, input_arr)
+# ✅ 올바른 코드
+self.data[index] = float(value) # 항상 float으로 저장
+```
 
-# ✅ 올바른 방법: 이중 for문 사용
-result = 0.0
-for r in range(n):
-    for c in range(n):
-        result += filter_p.get(r, c) * input_p.get(r, c)
+### 실수 5️⃣ : 크기 불일치 확인 누락
 
+```python
+# ❌ 틀린 코드
+def mac(filter_p, input_p):
+    # 크기 확인 없이 바로 연산 → 잘못된 결과가 나와도 모름
 
-8. 테스트 체크리스트
-📋 제출 전 확인 사항
+# ✅ 올바른 코드
+def mac(filter_p, input_p):
+    if filter_p.n != input_p.n:
+        raise ValueError(f"크기가 달라요! filter={filter_p.n}, input={input_p.n}")
+```
 
-파일 구조 확인
-  □ data_structure.py 있음
-  □ mac.py 있음
-  □ judge.py 있음
-  □ input_handler.py 있음
-  □ json_loader.py 있음
-  □ performance.py 있음
-  □ main.py 있음
-  □ data.json 있음
+---
 
-기능 확인
-  □ 모드 1 실행 시 6개 패턴 모두 출력됨
-  □ 모드 1 실행 시 PASS/FAIL 결과 나옴
-  □ 모드 2 실행 시 잘못된 크기 입력해도 재입력 요청함
-  □ 모드 2 실행 시 잘못된 행렬 입력해도 재입력 요청함
-  □ 모드 3 선택 시 프로그램 종료됨
-  □ 평균 실행 시간(ms)이 출력됨
+## 8. 테스트 체크리스트
 
-코드 규칙 확인
-  □ numpy, scipy 등 외부 라이브러리 미사용
-  □ MAC 연산에 이중 for문 사용
-  □ Pattern 클래스의 1D 리스트 사용
+### ✅ STEP별 완료 확인
 
+```
+STEP 1: data_structure.py
+  □ Pattern(5) 생성 → data 길이가 25인지 확인
+  □ set(0,0,1.0) → get(0,0) == 1.0 인지 확인
+  □ load_from_list(2D 리스트) → to_2d_list() 로 복원되는지 확인
 
-🖥️ 예상 실행 결과 (모드 1)
+STEP 2: mac.py
+  □ 같은 패턴 두 개 → 점수가 양수인지 확인
+  □ 완전히 다른 패턴 → 점수가 0.0인지 확인
+  □ 크기 다른 두 Pattern → ValueError 발생하는지 확인
 
+STEP 3: judge.py
+  □ score_cross > score_x → "Cross" 반환 확인
+  □ score_cross < score_x → "X" 반환 확인
+  □ score_cross == score_x → "UNDECIDED" 반환 확인
+  □ "Cross" == "Cross" → "PASS" 반환 확인
+  □ "UNDECIDED" → "FAIL" 반환 확인
+
+STEP 4: input_handler.py
+  □ 문자 입력 → 경고 메시지 출력 후 재입력 확인
+  □ 잘못된 크기 입력 → 경고 메시지 출력 후 재입력 확인
+  □ 열 개수 틀린 행 입력 → 경고 메시지 출력 후 재입력 확인
+
+STEP 5: json_loader.py
+  □ data.json 로드 → filters 키가 5, 13, 25인지 확인
+  □ "+" → "Cross" 정규화 확인
+  □ "x" → "X" 정규화 확인
+  □ 없는 파일 경로 → FileNotFoundError 발생 확인
+
+STEP 6: performance.py
+  □ 반환값이 float인지 확인
+  □ 반환값이 0보다 큰지 확인
+
+STEP 7: main.py
+  □ 모드 1 실행 → 모든 패턴 결과 출력 확인
+  □ 모드 2 실행 → 수동 입력 후 결과 출력 확인
+  □ 모드 3 선택 → 프로그램 종료 확인
+  □ 잘못된 모드 입력 → 경고 후 재선택 확인
+```
+
+### ✅ 최종 실행 결과 예시
+
+```
 ==================================================
    Mini NPU 시뮬레이터
 ==================================================
@@ -959,51 +961,37 @@ data.json 로딩 중...
   모드 1: 자동 배치 검사
 ==================================================
 
-[size_5_1]
-  크기       : 5×5
-  Cross 점수 : 0.0000
-  X 점수     : 8.9000
-  판정       : X
-  정답       : X
-  결과       : PASS ✅
-  평균 시간  : 0.002341 ms
-
-[size_5_2]
+  [size_5_1]
   크기       : 5×5
   Cross 점수 : 8.9000
-  X 점수     : 0.0000
+  X     점수 : 0.0000
   판정       : Cross
   정답       : Cross
   결과       : PASS ✅
+  평균 시간  : 0.002341 ms
+
+  [size_5_2]
+  크기       : 5×5
+  Cross 점수 : 0.0000
+  X     점수 : 8.9000
+  판정       : X
+  정답       : X
+  결과       : PASS ✅
   평균 시간  : 0.002187 ms
 
-...
-
 ==================================================
-  총 6개 | ✅ PASS: 6 | ❌ FAIL: 0
+  총 2개 | ✅ PASS: 2 | ❌ FAIL: 0
 ==================================================
-💪 여기까지 완성했다면 Mini NPU 시뮬레이터 구현 완료입니다!
-막히는 부분이 있으면 각 STEP의 테스트 해보기 섹션을 먼저 실행해보세요.
-작은 단위로 테스트하면 오류를 빠르게 찾을 수 있습니다! 🎉
-
+```
 
 ---
 
-전체 `.md` 파일이 완성되었습니다! 🎉
+> 💡 **막히면 순서대로 확인하세요!**
+>
+> ```
+> 1. 오류 메시지를 끝까지 읽는다
+> 2. 어느 파일, 몇 번째 줄인지 확인한다
+> 3. 해당 STEP의 테스트 체크리스트를 다시 확인한다
+> 4. 자주 하는 실수 목록과 비교한다
+> ```
 
-## 📌 파일 저장 방법
-파일 이름: mini_npu_guide.md
-저장 위치: mini_npu/ 폴더 안 (다른 .py 파일들과 같은 위치)
-
-
-## 📌 이 가이드의 구성 요약
-
-| 섹션 | 내용 |
-|------|------|
-| 1~2장 | 프로젝트 개념 + 핵심 원리 3가지 |
-| 3장 | 파일 구조 + 작성 순서 |
-| 4장 | 7개 파일 코드 + 상세 설명 |
-| 5장 | data.json 구조 연결 방법 |
-| 6장 | 전체 흐름 다이어그램 |
-| 7장 | 자주 하는 실수 5가지 |
-| 8장 | 제출 전 체크리스트 |
