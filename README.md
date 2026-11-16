@@ -59,6 +59,9 @@ AI가 그림을 인식할 때 **"필터"** 라는 도구를 사용합니다.
 최종 합계: 0+0+1 + 0+1+0 + 1+0+0 = 3.0  ← 이게 MAC 점수!
 ```
 
+![mac_1](./screenshots/mac_1.png)
+![Accumulate](./screenshots/Accumulate.png)
+
 
 ### 개념 2️⃣ : 왜 필터가 필요한가?
 
@@ -70,6 +73,11 @@ X     필터로 계산  →  X     점수: 1.0   ← 낮다!
 ```
 
 필터는 **"이 모양이 맞으면 점수를 높게 주는 채점표"** 입니다.
+
+필터(Filter)는 입력 데이터에서 찾고자 하는 패턴의 템플릿입니다.
+입력 벡터를 왼쪽에서 오른쪽으로 슬라이딩하며 필터와 비교합니다.
+비유: 필터는 "도장"이고, 입력은 "종이"입니다. 도장을 찍어서 일치하는 위치를 찾는 것입니다.
+
 
 ### 개념 3️⃣ : 라벨 정규화란?
 
@@ -262,7 +270,8 @@ def mac(filter_p: Pattern, input_p: Pattern) -> float:
     return result
 ```
 ![mac](./screenshots/mac.png)
-
+![mac_2](./screenshots/mac_2.png)
+![파이프라인](./screenshots/파이프라인.png)
 ---
 
 ### STEP 3: `judge.py` - 판정
@@ -442,7 +451,7 @@ def get_matrix_input(n: int) -> list:
 ```
 
 ![input_handler](./screenshots/input_handler.png)
-
+![라벨정규화](./screenshots/라벨정규화.png)
 ---
 
 ### STEP 5: `json_loader.py` - 데이터 로드
@@ -538,7 +547,8 @@ def load_data(filepath: str) -> dict:
 ```
 
 ![json_loader](./screenshots/json_loader.png)
-
+![데이터구조_2](./screenshots/데이터구조_2.png)
+![정규화](./screenshots/정규화.png)
 ---
 
 ### STEP 6: `performance.py` - 성능 측정
@@ -669,6 +679,8 @@ def run_mode1(data: dict):
     print(f"  총 {total}개 | ✅ PASS: {passed} | ❌ FAIL: {failed}")
     print("=" * 50)
 
+![모드구현](./screenshots/모두구현.png)
+![모드구현실수](./screenshots/모두구현실수.png)
 
 # ── 모드 2: 수동 입력 검사 ──────────────────────────────────
 def run_mode2(data: dict):
@@ -757,7 +769,10 @@ if __name__ == "__main__":
     main()
 ```
 
+![모드구현_2](./screenshots/모드구현_2.png)
 ![main](./screenshots/main.png)
+
+![모드구현_차이](./screenshots/모드구현_차이.png)
 
 ---
 
@@ -786,6 +801,8 @@ data.json 구조                     파이썬에서 접근하는 방법
   }
 }
 ```
+![데이터구조](./screenshots/데이터구조.png)
+![json오류](./screenshots/json오류.png)
 
 ### 📌 자주 헷갈리는 부분
 
@@ -1134,8 +1151,7 @@ n = 25  →  25 × 25 =   625 번   (25의 약 25배)
 
 ---
 
-
-📎부록.1 : 파일 구조 최종 정리
+📎부록 : 파일 구조 최종 정리
 
 mini_npu/
 │
