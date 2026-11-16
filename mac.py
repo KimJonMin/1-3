@@ -18,4 +18,3 @@ def mac(filter_p: Pattern, input_p: Pattern) -> float:
             result += filter_p.get(r, c) * input_p.get(r, c)
 
     return result
-```

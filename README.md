@@ -584,6 +584,7 @@ def measure_performance(
 
     return avg_ms
 ```
+![performance](./screenshots/performance.png)
 
 #### ✅ 출력 예시
 
@@ -755,6 +756,8 @@ def main():
 if __name__ == "__main__":
     main()
 ```
+
+![main](./screenshots/main.png)
 
 ---
 
@@ -999,6 +1002,9 @@ data.json 로딩 중...
   총 2개 | ✅ PASS: 2 | ❌ FAIL: 0
 ==================================================
 ```
+
+![최종실행결과1](./screenshots/최종실행결과1.png)
+![최종실행결과2](./screenshots/최종실행결과2.png)
 
 ---
 
