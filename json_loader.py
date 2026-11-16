@@ -65,4 +65,3 @@ def load_data(filepath: str) -> dict:
         })
 
     return {"filters": filters, "patterns": patterns}
-```

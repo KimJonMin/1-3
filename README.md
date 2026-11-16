@@ -178,6 +178,9 @@ class Pattern:
         return f"Pattern(n={self.n})"
 ```
 
+![data_structure](./screenshots/data_structure.png)
+
+
 #### ✅ 테스트 해보기
 
 ```python

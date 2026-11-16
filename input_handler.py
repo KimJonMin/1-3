@@ -1,4 +1,3 @@
-
 def get_size_input(valid_sizes: list) -> int:
     """
     유효한 크기(5, 13, 25)를 입력받을 때까지 반복합니다
@@ -6,7 +5,7 @@ def get_size_input(valid_sizes: list) -> int:
     size_str = ", ".join(str(s) for s in valid_sizes)  # "5, 13, 25"
 
     while True:
-        raw = input(f"\n  패턴 크기를 입력하세요 ({size_str}): ").strip()
+        raw = input(f"\n 패턴 크기를 입력하세요 ({size_str}): ").strip()
 
         # 1) 숫자인지 확인
         if not raw.isdigit():
@@ -25,10 +24,10 @@ def get_size_input(valid_sizes: list) -> int:
 
 def get_matrix_input(n: int) -> list:
     """
-    n×n 행렬을 한 줄씩 입력받습니다
+    nxn 행렬을 한 줄씩 입력받습니다
     반환값: 2D 리스트 (float)
     """
-    print(f"\n  {n}×{n} 행렬을 입력하세요.")
+    print(f"\n  {n}x{n} 행렬을 입력하세요.")
     print(f"  (한 줄에 {n}개 숫자를 공백으로 구분)")
     print(f"  예) 0 0 1 0 0")
 
@@ -55,4 +54,3 @@ def get_matrix_input(n: int) -> list:
             break
 
     return grid
-```

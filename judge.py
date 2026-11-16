@@ -23,4 +23,3 @@ def check_pass_fail(judge_result: str, expected_label: str) -> str:
         return "PASS"
     else:
         return "FAIL"
-```
