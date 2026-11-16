@@ -1,56 +1,38 @@
-def get_size_input(valid_sizes: list) -> int:
+# performance.py
+
+import time
+from data_structure import Pattern
+from mac import mac
+
+
+def measure_performance(
+    filter_p: Pattern,
+    input_p:  Pattern,
+    repeat:   int = 100
+) -> float:
     """
-    유효한 크기(5, 13, 25)를 입력받을 때까지 반복합니다
+    MAC 연산을 repeat번 반복해서 평균 실행 시간(ms)을 반환합니다
     """
-    size_str = ", ".join(str(s) for s in valid_sizes)  # "5, 13, 25"
+    start = time.perf_counter()
 
-    while True:
-        raw = input(f"\n 패턴 크기를 입력하세요 ({size_str}): ").strip()
+    for _ in range(repeat):
+        mac(filter_p, input_p)
 
-        # 1) 숫자인지 확인
-        if not raw.isdigit():
-            print(f"  ⚠ 숫자를 입력하세요. (예: 5)")
-            continue
+    end = time.perf_counter()
 
-        n = int(raw)
+    total_ms = (end - start) * 1000
+    avg_ms   = total_ms / repeat
 
-        # 2) 유효한 크기인지 확인
-        if n not in valid_sizes:
-            print(f"  ⚠ {size_str} 중 하나를 입력하세요.")
-            continue
-
-        return n
+    return avg_ms
 
 
-def get_matrix_input(n: int) -> list:
-    """
-    nxn 행렬을 한 줄씩 입력받습니다
-    반환값: 2D 리스트 (float)
-    """
-    print(f"\n  {n}x{n} 행렬을 입력하세요.")
-    print(f"  (한 줄에 {n}개 숫자를 공백으로 구분)")
-    print(f"  예) 0 0 1 0 0")
+if __name__ == "__main__":
+    from json_loader import load_data
 
-    grid = []
+    data     = load_data("data.json")
+    first_n  = sorted(data["filters"].keys())[0]
+    filter_p = data["filters"][first_n]["Cross"]
+    input_p  = data["patterns"][0]["pattern"]
 
-    for r in range(n):
-        while True:
-            raw = input(f"  {r+1}행: ").strip()
-            tokens = raw.split()
-
-            # 1) 개수 확인
-            if len(tokens) != n:
-                print(f"  ⚠ {n}개의 숫자를 입력하세요. (현재 {len(tokens)}개)")
-                continue
-
-            # 2) 숫자인지 확인
-            try:
-                row = [float(t) for t in tokens]
-            except ValueError:
-                print(f"  ⚠ 숫자만 입력하세요.")
-                continue
-
-            grid.append(row)
-            break
-
-    return grid
+    avg = measure_performance(filter_p, input_p, repeat=100)
+    print(f"평균 시간: {avg:.6f} ms")
