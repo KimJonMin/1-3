@@ -61,10 +61,7 @@ AI가 그림을 인식할 때 **"필터"** 라는 도구를 사용합니다.
 최종 합계: 0+0+1 + 0+1+0 + 1+0+0 = 3.0  ← 이게 MAC 점수!
 ```
 
-![mac_1](./screenshots/mac_1.png)
-![Accumulate](./screenshots/Accumulate.png)
-
-<img src="./screenshots/mac_1.png" width="600" alt="mac_1">
+<img src="./screenshots/mac_1.png" width="400" alt="mac_1">
 <img src="./screenshots/Accumulate.png" width="600" alt="Accumulate">
 
 ### 개념 2️⃣ : 왜 필터가 필요한가?
@@ -76,15 +73,16 @@ X     필터로 계산  →  X     점수: 1.0   ← 낮다!
 9.0 > 1.0  →  "이 그림은 Cross 입니다!" ✅
 ```
 
-필터는 **"이 모양이 맞으면 점수를 높게 주는 채점표"** 입니다.
-필터는 입력 이미지에서 특정 특징이 얼마나 잘 나타나는지 점수로 계산합니다.
-점수가 높을수록 해당 필터가 찾는 특징과 비슷하다는 뜻입니다.
-다만 실제 CNN에서는 점수가 반드시 0~9 사이인 것은 아니고, 필터의 숫자와 입력 이미지에 따라 다양한 값이 나옵니다.
+* 필터는 **"이 모양이 맞으면 점수를 높게 주는 채점표"** 입니다.
+* 필터는 입력 이미지에서 특정 특징이 얼마나 잘 나타나는지 점수로 계산합니다.
+* 점수가 높을수록 해당 필터가 찾는 특징과 비슷하다는 뜻입니다.
+* 다만 실제 CNN에서는 점수가 반드시 0~9 사이인 것은 아니고, 필터의 숫자와 
+  입력 이미지에 따라 다양한 값이 나옵니다.
 
-
-필터(Filter)는 입력 데이터에서 찾고자 하는 패턴의 템플릿입니다.
-입력 벡터를 왼쪽에서 오른쪽으로 슬라이딩하며 필터와 비교합니다.
-비유: 필터는 "도장"이고, 입력은 "종이"입니다. 도장을 찍어서 일치하는 위치를 찾는 것입니다.
+* 필터(Filter)는 입력 데이터에서 찾고자 하는 패턴의 템플릿입니다.
+* 입력 벡터를 왼쪽에서 오른쪽으로 슬라이딩하며 필터와 비교합니다.
+* 비유: 필터는 "도장"이고, 입력은 "종이"입니다. 도장을 찍어서 일치하는 
+       위치를 찾는 것입니다.
 
 ---
 MAC 연산 전체 흐름 (코드 구조 기준)
@@ -255,7 +253,9 @@ class Pattern:
 ```
 
 ![data_structure](./screenshots/data_structure.png)
-![data_structure_class1](./screenshots/data_structure_class1.png)
+
+<img src="./screenshots/data_structure_class1.png" width="600" alt="data_structure_class1">
+
 
 #### ✅ 테스트 해보기
 
@@ -705,11 +705,9 @@ def load_data(filepath: str) -> dict:
        Pattern 객체로 변환하여 filters[n]에 저장
 
 ![json_loader](./screenshots/json_loader.png)
-![데이터구조_2](./screenshots/데이터구조_2.png)
-![정규화](./screenshots/정규화.png)
 
 <img src="./screenshots/데이터구조_2.png" width="600" alt="데이터구조_2">
-<img src="./screenshots/정규화_2.png" width="600" alt="정규화">
+<img src="./screenshots/정규화_2.png" width="600" alt="정규화_2">
 ---
 
 
@@ -1035,12 +1033,6 @@ if __name__ == "__main__":
 
 <img src="./screenshots/모드구현_2.png" width="600" alt="모드구현_2">
 
-
-![데이터구조](./screenshots/데이터구조.png)
-
-![모드구현_차이](./screenshots/모드구현_차이.png)
-
-![모드구현_2](./screenshots/모드구현_2.png)
 ---
 
 라벨 정규화 (normalize_label)
@@ -1085,7 +1077,6 @@ data.json 구조                     파이썬에서 접근하는 방법
 
 <img src="./screenshots/json오류.png" width="600" alt="json오류">
 
-![json오류](./screenshots/json오류.png)
 
 ---
 
@@ -1294,17 +1285,12 @@ data.json 로딩 중...
 ==================================================
 ```
 
-<img src="./screenshots/최종실행결과1.png" width="600" alt="최종실행결과1">
+<img src="./screenshots/최종실행결과1.png" width="500" alt="최종실행결과1">
 
-<img src="./screenshots/최종실행결과2.png" width="600" alt="최종실행결과2">
+<img src="./screenshots/최종실행결과2.png" width="500" alt="최종실행결과2">
 
-<img src="./screenshots/사용자입력_Test.png" width="600" alt="사용자입력_Test">
+<img src="./screenshots/사용자입력_Test.png" width="500" alt="사용자입력_Test">
 
-
-![최종실행결과1](./screenshots/최종실행결과1.png)
-![최종실행결과2](./screenshots/최종실행결과2.png)
-
-![사용자입력_Test](./screenshots/사용자입력_Test.png)
 ---
 
 
