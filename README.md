@@ -202,7 +202,7 @@ class Pattern:
 ```
 
 ![data_structure](./screenshots/data_structure.png)
-![data_structure_class1](./screenshots/data_structure_clsss1.png)
+
 
 #### ✅ 테스트 해보기
 
