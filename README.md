@@ -800,11 +800,13 @@ if __name__ == "__main__":
     main()
 ```
 
-![모드구현_2](./screenshots/모드구현_2.png)
 ![main](./screenshots/main.png)
+
+![데이터구조](./screenshots/데이터구조.png)
 
 ![모드구현_차이](./screenshots/모드구현_차이.png)
 
+![모드구현_2](./screenshots/모드구현_2.png)
 ---
 
 ## 5. data.json 읽는 법
@@ -832,7 +834,7 @@ data.json 구조                     파이썬에서 접근하는 방법
   }
 }
 ```
-![데이터구조](./screenshots/데이터구조.png)
+
 ![json오류](./screenshots/json오류.png)
 
 ### 📌 자주 헷갈리는 부분
