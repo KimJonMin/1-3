@@ -1186,7 +1186,7 @@ n = 25  →  25 × 25 =   625 번   (25의 약 25배)
 
 ---
 
-📎부록 : 파일 구조 최종 정리
+📎부록.1 : 파일 구조 최종 정리
 
 ```
 mini_npu/
@@ -1216,24 +1216,9 @@ mini_npu/
 
 ```
 
-📎 부록.2 : 빠른 실행 방법
-1️⃣ 파일 준비 확인
-# 터미널에서 파일 목록 확인
-ls mini_npu/
+---
 
-# 출력 예시
-data.json  data_structure.py  judge.py  json_loader.py
-input_handler.py  mac.py  main.py  performance.py  README.md
-
-2️⃣ 실행
-# mini_npu 폴더로 이동
-cd mini_npu
-
-# 프로그램 실행
-python main.py
-
-
-📎 부록.3 : 핵심 개념 한 줄 정리
+📎 부록.2 : 핵심 개념 한 줄 정리
 개념	한 줄 설명
 Pattern	n×n 행렬을 1차원 리스트로 저장하는 자료구조
 MAC 연산	두 패턴의 같은 위치 값을 곱하고 모두 더하는 연산
@@ -1245,3 +1230,5 @@ PASS	판정 결과와 정답(expected)이 일치하는 경우
 FAIL	판정 결과와 정답이 다르거나 UNDECIDED인 경우
 O(n²)	패턴 크기 n이 커질수록 연산 횟수가 제곱으로 늘어남
 100회 반복	성능 측정의 신뢰도를 높이기 위해 평균값을 사용
+
+---
