@@ -111,8 +111,7 @@ def mac(pattern, filter_):
             score += pattern[i][j] * filter_[i][j]
     return score
 ```
-![전체과정](./screenshots/전체과정.png)
-<img src="./screenshots/전체과정.png" width="400" alt="전체과정">
+<img src="./screenshots/전체과정.png" width="600" alt="전체과정">
 ---
 
 
