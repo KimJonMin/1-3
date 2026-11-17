@@ -835,8 +835,6 @@ data.json 구조                     파이썬에서 접근하는 방법
 }
 ```
 
-![json오류](./screenshots/json오류.png)
-
 ### 📌 자주 헷갈리는 부분
 
 ```
@@ -847,7 +845,10 @@ data.json 구조                     파이썬에서 접근하는 방법
 ✅ 올바른 접근: filters[5]               ← 변환 후에는 정수 5 로 접근
 ```
 
+![json오류](./screenshots/json오류.png)
+
 ---
+
 
 ## 6. 전체 흐름 한눈에 보기
 
