@@ -43,7 +43,7 @@ AI가 그림을 인식할 때 **"필터"** 라는 도구를 사용합니다.
 ## 2. 핵심 개념 3가지
 
 ### 개념 1️⃣ : MAC 연산이란?
-
+컴퓨터는 이미지를 숫자 배열로만 이해한다. 입력 패턴과 필터(기준 패턴)가 얼마나 유사한지 판단하는 방법이 MAC(Multiply-Accumulate) 연산이다.
 **MAC = Multiply(곱하기) + Accumulate(누적 더하기)**
  Multiply (곱하기): 두 행렬의 같은 위치에 있는 숫자끼리 곱합니다.
  Accumulate (더하기/누적): 그 곱한 결과들을 모두 하나로 합칩니다.
@@ -75,16 +75,54 @@ X     필터로 계산  →  X     점수: 1.0   ← 낮다!
 ```
 
 필터는 **"이 모양이 맞으면 점수를 높게 주는 채점표"** 입니다.
+필터는 입력 이미지에서 특정 특징이 얼마나 잘 나타나는지 점수로 계산합니다.
+점수가 높을수록 해당 필터가 찾는 특징과 비슷하다는 뜻입니다.
+다만 실제 CNN에서는 점수가 반드시 0~9 사이인 것은 아니고, 필터의 숫자와 입력 이미지에 따라 다양한 값이 나옵니다.
+
 
 필터(Filter)는 입력 데이터에서 찾고자 하는 패턴의 템플릿입니다.
 입력 벡터를 왼쪽에서 오른쪽으로 슬라이딩하며 필터와 비교합니다.
 비유: 필터는 "도장"이고, 입력은 "종이"입니다. 도장을 찍어서 일치하는 위치를 찾는 것입니다.
+
+---
+MAC 연산 전체 흐름 (코드 구조 기준)
+
+입력(pattern) + 필터(filter_)
+        │
+        ▼  main.py:24-31  mac(pattern, filter_)
+   for i in range(n):
+     for j in range(n):
+       score += pattern[i][j] * filter_[i][j]   ← 위치별 곱셈
+        │
+        ▼
+   score 반환 (누적 합산 완료)
+        │
+        ▼  main.py:35-38  judge(score_cross, score_x)
+   |score_cross - score_x| < EPSILON → UNDECIDED
+   score_cross > score_x             → Cross
+   else          
+```
+# app/main.py:24-31
+def mac(pattern, filter_):
+    score = 0.0
+    n = len(pattern)
+    for i in range(n):
+        for j in range(n):
+            score += pattern[i][j] * filter_[i][j]
+    return score
+```
+![전체과정](./screenshots/전체과정.png)
+
+---
 
 
 ### 개념 3️⃣ : 라벨 정규화란?
 
 JSON 파일에는 `"+"`, `"x"` 처럼 다양하게 쓰여 있습니다.  
 프로그램 안에서는 **통일된 이름**을 써야 합니다.
+정규화는 쉽게 말해서 서로 다른 표현을 하나의 약속된 표현으로 통일하는 것
+
+정규화 = 여러 가지 표현을 하나의 통일된 표현으로 바꾸는 작업
 
 ```
 JSON에 있는 값    →    프로그램 안에서 쓰는 값
@@ -100,6 +138,15 @@ JSON에 있는 값    →    프로그램 안에서 쓰는 값
    : Cross의 경우: 외부에서 "+"라고 오든, 소문자 "cross"라고 오든, 프로그램 
      안에서는 무조건 대문자 시작인 "Cross"로 바꿔서 인식하겠다는 뜻입니다.
      X의 경우: 소문자 "x"와 대문자 "X"를 모두 대문자 "X" 하나로 통일합니다.
+
+
+정규화 장점
+
+데이터가 서로 다른 표현으로 들어와도 처리하기 쉽습니다.
+프로그램이 데이터를 잘못 판단할 가능성을 줄입니다.
+비교하거나 분류하는 작업이 간단해집니다.
+프로그램 내부의 코드가 복잡해지는 것을 방지합니다.
+
 ---
 
 ## 3. 파일 구조
@@ -133,6 +180,7 @@ mini_npu/
 5×5 행렬을 저장할 때 2D 리스트를 쓰면 편하지만,  
 실제 NPU 하드웨어는 **1D(일렬)로 메모리에 저장**합니다.  
 이 클래스는 그 방식을 흉내냅니다.
+2차원(2D)으로 된 데이터를 1차원(1D)으로 펼쳐서 저장하는 방법
 
 #### 📐 2D → 1D 변환 원리
 컴퓨터의 메모리(RAM)는 물리적으로 **직선 형태(1차원)**로 늘어서 있습니다. 그래서 우리가 이미지(2D)를 저장할 때, 첫 번째 줄을 먼저 적고, 그 뒤에 바로 두 번째 줄을 이어 붙이는 방식을 사용
@@ -148,10 +196,14 @@ mini_npu/
 
 위치 계산 공식: index = row × n + col
 예) row=1, col=2, n=3  →  index = 1×3+2 = 5  →  값: 6
+
+가장 중요한 공식: index = row × n + col
+
 ```
  row: 찾으려는 값이 몇 번째 줄에 있는가? (0부터 시작)
  n: 한 줄에 데이터가 몇 개 있는가? (가로 너비)
  col: 그 줄에서 몇 번째 칸에 있는가? (0부터 시작)
+ index: 위치번호(1D 배열의 몇번째 위치인가?)
 
 2D 행렬은 사람이 보기 편한 구조, 1D 리스트는 컴퓨터가 저장하기 편한 구조입니다.
 row * n + col 공식은 2차원 지도를 보고 1차원 주소를 찾아가는 내비게이션과 같습니다.
@@ -283,6 +335,20 @@ def mac(filter_p: Pattern, input_p: Pattern) -> float:
 
     return result
 ```
+* filter : 점수를 계산할 대상이 되는 배열
+* input : 실제로 입력된 패턴 배열
+* 같은 위치의 숫자끼리 곱하고 모든 결과를 더하는 연산
+
+: def calculate_score(...)	점수 계산 함수를 만든다
+: score = 0	점수의 초기값을 0으로 설정
+: for i in range(5)	0~4까지 5개 행을 반복
+: for j in range(5)	각 행에서 0~4까지 5개 열을 반복
+: filter[i][j]	필터의 해당 위치 숫자를 가져온다
+: input[i][j]	입력 배열의 해당 위치 숫자를 가져온다
+: *	두 숫자를 곱한다
+: score +=	곱한 결과를 기존 점수에 누적한다
+: return score	최종 점수를 반환한다
+
 안전장치: 크기 검사
 이유: MAC 연산은 두 행렬의 칸 수가 완벽하게 일치해야 합니다. 
 (예: 3x3 필터는 3x3 영역과만 계산 가능)
@@ -307,6 +373,9 @@ Cross 필터와 실제 이미지를 이 mac 함수에 넣었을 때:
 
 ### STEP 3: `judge.py` - 판정
 
+파일의 역할인 '최종 판정 로직'**을 설명하는 부분
+두 후보의 점수를 비교해서 승자를 결정하는 심판 역할
+
 #### 🤔 판정 흐름
 
 ```
@@ -316,6 +385,9 @@ Cross 점수 > X 점수   →   결과: "Cross"
 Cross 점수 < X 점수   →   결과: "X"
 Cross 점수 = X 점수   →   결과: "UNDECIDED"
 ```
+
+![판정흐름](./screenshots/판정흐름.png)
+
 
 #### 💻 코드
 
@@ -349,6 +421,15 @@ def check_pass_fail(judge_result: str, expected_label: str) -> str:
         return "FAIL"
 ```
 ![judge](./screenshots/judge.png)
+
+: def : 함수를 정의하는 Python 명령어
+: judge : 함수 이름
+: cross_score : Cross 점수를 전달받는 변수
+: x_score : X 점수를 전달받는 변수
+: = : 값을 저장하는 대입 연산자
+: == : 두 값이 같은지 비교하는 연산자
+: > / < : 크고 작은지 비교하는 연산자
+
 
 #### ✅ 판정 예시
 
@@ -458,6 +539,26 @@ def get_matrix_input(n: int) -> list:
 
     return grid
 ```
+: get_size_input(valid_sizes: list) -> int 
+  사용자로부터 유효한 패턴 크기(예: 5, 13, 25)를 올바르게 입력받을 때까지 반복해서 확인
+: 안내 문자열 생성 size_str = ", ".join(str(s) for s in valid_sizes
+   전달받은 리스트를 5, 13, 25 형태의 문자열로 만듭
+: 무한 루프 while True : 올바른 값이 입력될 때까지 계속 입력을 요구
+: 숫자인지 확인 if not raw.isdigit() : 
+  입력값이 숫자로만 이루어져 있는지 검사합니다. 숫자가 아니면 에러 메시지를 출력하고 continue로 다시 입력
+: 유효한 크기인지 확인 : 정수로 변환한 값(n)이 허용된 목록(valid_sizes)에 포함되는지 확인
+: 반환: 모든 검증을 통과한 유효한 정수 n을 반환
+
+: get_matrix_input(n: int) -> list
+  n x n 크기의 행렬 데이터를 사용자로부터 한 줄씩 입력받아 2차원 리스트(float 타입)로 만들어 반환하는 함수
+: 행 반복 (for r in range(n)): 총 $n개의 행을 각각 입력받기 위해 반복문을 실행
+: 무한 루프와 공백 분리: raw.split()을 사용해 사용자가 공백으로 구분해 입력한 숫자들을 토큰 리스트로 쪼갭
+: 1) 개수 확인: 입력된 숫자의 개수(len(tokens))가 행렬 크기인 n과 정확히 일치하는지 검사합니다. 개수가 다르면 다시 입력
+: 2) 숫자인지 확인 (try-except):
+     1. [float(t) for t in tokens]를 통해 모든 토큰을 실수(float)로 변환을 시도
+     2. 만약 문자가 섞여 있어 변환에 실패하면 ValueError가 발생하므로, 이를 잡아내어 
+        "△ 숫자만 입력하세요."를 출력하고 재입력을 받음
+
 
 #### ✅ 입력 예시
 
@@ -577,11 +678,36 @@ def load_data(filepath: str) -> dict:
 
     return {"filters": filters, "patterns": patterns}
 ```
+1. 라벨 정규화 테이블 및 함수 (LABEL_MAP & normalize_label)
+   JSON 파일이나 사용자 입력에 따라 제각각 다를 수 있는 라벨 표기를 일관된 형태로 통일(정규화)하기 위한 장치
+
+   1) LABEL_MAP (딕셔너리): 
+     : "+", "cross", "Cross", "CROSS" 같은 다양한 표현은 "Cross"로 매핑
+     :"x", "X" 같은 표현은 "X"로 매핑
+   2) normalize_label(raw: str) -> str 함수:
+     :입력받은 문자열의 공백을 제거(raw.strip())한 뒤, LABEL_MAP에서 대응하는 표준   
+      라벨을 찾아 반환
+     :만약 사전에 없는 알 수 없는 값이 들어오면 ValueError 예외를 발생시켜 잘못된 데이터 
+      입력을 차단
+
+2. 데이터 로드 함수 (load_data)
+   지정된 파일 경로(filepath)로부터 JSON 파일을 읽어 들여 프로그램에서 사용하기 좋은 딕셔너리 형태로 변환
+   1) 파일 읽기 (try-except):
+     : open(filepath, "r", encoding="utf-8")을 통해 지정된 JSON 파일을 UTF-8 
+       인코딩으로 안전하게 불러옵
+     : 파일이 존재하지 않을 경우 FileNotFoundError 예외를 처리하여 에러 메시지를 
+       발생시킵니다.
+   2) filters 변환:
+     : JSON 파일 안의 필터 키(예: "size_5")를 key.split("_")[1] 방식으로 쪼개어 정수형 
+       크기 n(예: 5)으로 바꿉
+     : 각 크기별로 "cross"와 "x" 리스트 데이터를 Pattern.load_from_list() 메서드를 통해
+       Pattern 객체로 변환하여 filters[n]에 저장
 
 ![json_loader](./screenshots/json_loader.png)
 ![데이터구조_2](./screenshots/데이터구조_2.png)
 ![정규화](./screenshots/정규화.png)
 ---
+
 
 ### STEP 6: `performance.py` - 성능 측정
 
@@ -626,6 +752,23 @@ def measure_performance(
 
     return avg_ms
 ```
+
+매개변수 (Parameters)
+ : filter_p: Pattern: 연산에 사용할 필터 패턴 객체
+ : input_p: Pattern: 연산에 사용할 입력 패턴 객체
+ : repeat: int = 100: 성능 측정의 정확도를 높이기 위해 연산을 반복할 횟수 (기본값 100회)
+
+주요 동작 흐름
+1. 시작 시간 기록:
+   time.perf_counter()를 사용하여 정밀한 시간 측정용 시작 시점(start)을 기록
+2. 반복 연산 수행: for _ in range(repeat): 반복문을 통해 지정된 횟수(repeat)만큼
+                 mac(filter_p, input_p) 함수를 호출하여 연산을 수행
+3. 종료 시간 기록: 연산이 모두 끝난 직후의 시점(end)을 기록
+4. 시간 단위 변환 및 평균 계산: 
+   : 총 소요된 시간(초 단위)에 1000을 곱해 밀리초(ms) 단위인 total_ms로 변환
+   : 총 소요 시간을 반복 횟수(repeat)로 나누어 1회 실행 평균 시간(avg_ms)을 계산
+5. 결과 반환: 계산된 평균 실행 시간(avg_ms)을 실수(float) 형태로 반환
+
 ![출력시간](./screenshots/출력시간.png)
 
 #### ✅ 출력 예시
@@ -710,6 +853,34 @@ def run_mode1(data: dict):
     print(f"  총 {total}개 | ✅ PASS: {passed} | ❌ FAIL: {failed}")
     print("=" * 50)
 
+함수의 목적
+   data.json 파일에 정의된 모든 패턴 데이터를 자동으로 순회하면서 MAC 연산을 수행하고, 그 결과가 정답과 일치하는지 검사(PASS/FAIL)한 뒤 최종 통계를 요약해 주는 함수
+
+주요 동작 흐름
+1. 데이터 준비 및 초기화 
+   : 전달받은 data 딕셔너리에서 filters와 patterns를 추출
+   : 전체 검사 횟수(total), 성공 횟수(passed), 실패 횟수(failed)를 0으로 초기화
+
+2. 패턴 순회 및 MAC 연산
+   : patterns 리스트의 각 항목(item)마다 이름(name), 패턴 객체(pat), 정답(expected), 
+     크기(n)를 가져옴
+   : 해당 크기(n)에 맞는 "Cross"와 "X" 필터를 가져와 각각 pat과 MAC 연산을 수행하여 점수
+     (score_cross, score_x)를 계산
+
+3. 판정 및 성능 측정
+   : judge() 함수를 통해 두 점수를 바탕으로 판정(result)을 내리고, check_pass_fail()
+     함수로 정답(expected)과 비교하여 PASS 또는 FAIL 여부를 결정
+   : measure_performance() 함수를 호출하여 해당 연산의 평균 실행 시간(avg_ms)을 측정
+
+4. 결과 출력 및 통계 누적
+   : 각 패턴별로 이름, 크기, Cross/X 점수, 판정 결과, 정답 여부, 평균 실행 시간을 보기 
+     쉽게 출력
+   : 결과에 따라 passed 또는 failed 카운트를 1씩 증가시킴
+
+5. 최종 요약 출력
+   : 모든 패턴 검사가 끝나면 총 검사 개수, PASS 개수, FAIL 개수를 최종 요약하여 화면에 
+     보여줌
+
 ![모드구현](./screenshots/모두구현.png)
 ![모드구현실수](./screenshots/모두구현실수.png)
 
@@ -754,6 +925,35 @@ def run_mode2(data: dict):
         again = input("\n  다시 입력하시겠습니까? (y/n): ").strip().lower()
         if again != "y":
             break
+
+함수의 목적
+   사용자가 직접 패턴 크기와 행렬 데이터를 입력하면, 프로그램이 이를 바탕으로 MAC 연산을 수행하고 그 결과를 판정 및 성능 측정한 뒤 보여주는 대화형 모드
+
+주요 동작 흐름
+1. 초기 설정 
+   : 전달받은 data 딕셔너리에서 필터 정보를 가져오고, 사용 가능한 크기 목록(valid_sizes)
+     을 정렬하여 준비
+
+2. 무한 루프 (while True)
+   : 사용자가 원할 때까지 수동 검사 과정을 반복할 수 있도록 구조화
+
+3. 1) 크기 선택
+   : get_size_input(valid_sizes) 함수를 호출하여 사용자로부터 유효한 패턴 크기(n)를 입력
+   2) 행렬 입력 
+   : get_matrix_input(n) 함수를 통해 $n \times n$ 크기의 행렬 데이터를 입력받은 뒤, 
+     Pattern.load_from_list(grid)를 이용해 패턴 객체(pat)로 변환
+   3) MAC 연산
+    : 선택된 크기(n)에 해당하는 "Cross"와 "X" 필터를 불러와, 입력받은 패턴(pat)과의 
+    : MAC 연산 점수(score_cross, score_x)를 각각 계산
+   4) 판정 및 5) 성능 측정
+    : judge() 함수로 두 점수를 비교해 최종 판정 결과(result)를 도출
+    : measure_performance() 함수로 해당 연산의 평균 실행 시간(avg_ms)을 측정
+   6) 결과 출력
+    : Cross 점수, X 점수, 판정 결과, 평균 소요 시간을 보기 쉽게 출력
+   7) 계속 여부 확인
+    : 사용자에게 다시 입력하겠냐고 물어본 뒤(y/n), "y"가 아닐 경우 break를 통해 반복문을 
+      탈출하여 함수를 종료
+
 
 
 # ── 메인 함수 ───────────────────────────────────────────────
@@ -800,6 +1000,29 @@ if __name__ == "__main__":
     main()
 ```
 
+1. 프로그램 시작 및 데이터 로드 (main 함수 첫 부분)
+   * 타이틀 출력: 화면에 "Mini NPU 시뮬레이터"라는 제목을 예쁘게 출력
+   * 데이터 파일 로드 (try-except):
+      : load_data("data.json")을 호출하여 시뮬레이션에 필요한 데이터를 불러옴
+      : 파일이 없거나(FileNotFoundError) 데이터 형식이 잘못되어 에러가 발생하면
+        (ValueError), 에러 메시지를 출력하고 프로그램을 안전하게 종료
+
+2. 모드 선택 루프 (while True)
+   데이터 로드가 성공하면 사용자가 원하는 작업을 선택할 수 있도록 무한 루프를 돌며 메뉴를 보여줌
+   * 메뉴 구성:
+   1) 1번 (자동 배치 검사): data.json에 정의된 전체 패턴을 자동으로 검사하는 run_mode1
+      (data) 함수를 실행
+   2) 2번 (수동 입력 검사): 사용자가 직접 패턴 크기와 행렬을 입력하여 검사하는 run_mode2
+      (data) 함수를 실행
+   3) 3번 (종료): 안내 메시지를 출력하고 break를 통해 반복문을 탈출하여 프로그램을 종료
+
+   * 예외 처리 (else): 1, 2, 3 외의 다른 값을 입력하면 "△ 1, 2, 3 중 하나를 입력하세요.
+                     "라는 경고 메시지를 띄워 올바른 입력을 유도
+
+3. 프로그램 진입점(if __name__ == "__main__":)
+   파이썬 파일이 직접 실행될 때 main() 함수가 자동으로 호출되도록 설정하는 표준 진입점 코드
+
+
 ![main](./screenshots/main.png)
 
 ![데이터구조](./screenshots/데이터구조.png)
@@ -808,6 +1031,10 @@ if __name__ == "__main__":
 
 ![모드구현_2](./screenshots/모드구현_2.png)
 ---
+
+라벨 정규화 (normalize_label)
+별도 함수로 분리한 이유: 정규화 규칙이 필터 키 로드(모드 2 [1] 필터 로드)와 expected 검증(모드 2 [2] 패턴 분석) 두 곳에서 동일하게 쓰인다. 함수로 분리하면 규칙 변경 시 한 곳만 수정하면 되고, 각 호출부에서 try/except ValueError로 정규화 실패를 일관되게 처리할 수 있다.
+
 
 ## 5. data.json 읽는 법
 
@@ -1222,14 +1449,13 @@ mini_npu/
 ```
 개념	한 줄 설명
 Pattern	n×n : 행렬을 1차원 리스트로 저장하는 자료구조
-MAC 연산	 : 두 패턴의 같은 위치 값을 곱하고 모두 더하는 연산
+MAC 연산  : 두 패턴의 같은 위치 값을 곱하고 모두 더하는 연산
 필터	     : 비교 기준이 되는 Cross / X 모양 패턴
 판정	     : Cross 점수와 X 점수를 비교해 라벨을 결정하는 과정
 epsilon	    : 동점 판단 기준값 (1e-9), 이 차이 이하면 UNDECIDED
 정규화	+ → Cross, x → X 로 라벨을 통일하는 과정
 PASS	    : 판정 결과와 정답(expected)이 일치하는 경우
 FAIL	    : 판정 결과와 정답이 다르거나 UNDECIDED인 경우
-O(n²)	    : 패턴 크기 n이 커질수록 연산 횟수가 제곱으로 늘어남
 100회 반복	 : 성능 측정의 신뢰도를 높이기 위해 평균값을 사용
 
 ```
