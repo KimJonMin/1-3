@@ -633,7 +633,6 @@ def measure_performance(
 ```
 평균 시간: 0.002341 ms
 ```
-![alt text](image-3.png)
 ---
 
 ### STEP 7: `main.py` - 전체 조립
