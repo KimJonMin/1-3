@@ -364,6 +364,7 @@ def check_pass_fail(judge_result: str, expected_label: str) -> str:
   Cross 점수 : 3.0
   X     점수 : 3.
 ```
+![judge](./screenshots/judge.png)
 
 --- 
 
@@ -625,14 +626,14 @@ def measure_performance(
 
     return avg_ms
 ```
-![performance](./screenshots/performance.png)
+![출력시간](./screenshots/출력시간.png)
 
 #### ✅ 출력 예시
 
 ```
 평균 시간: 0.002341 ms
 ```
-
+![alt text](image-3.png)
 ---
 
 ### STEP 7: `main.py` - 전체 조립
