@@ -514,12 +514,12 @@ from data_structure import Pattern
 
 # ── 라벨 정규화 테이블 ──────────────────────────────────────
 LABEL_MAP = {
-    "+":      "Cross",
+    "+"    :  "Cross",
     "cross":  "Cross",
     "Cross":  "Cross",
     "CROSS":  "Cross",
-    "x":      "X",
-    "X":      "X",
+    "x"    :  "X",
+    "X"    :  "X",
 }
 
 def normalize_label(raw: str) -> str:
