@@ -111,7 +111,7 @@ def mac(pattern, filter_):
             score += pattern[i][j] * filter_[i][j]
     return score
 ```
-<img src="./screenshots/전체과정.png" width="600" alt="전체과정">
+<img src="./screenshots/전체과정.png" width="500" alt="전체과정">
 ---
 
 
@@ -254,7 +254,7 @@ class Pattern:
 
 ![data_structure](./screenshots/data_structure.png)
 
-<img src="./screenshots/data_structure_class1.png" width="600" alt="data_structure_class1">
+<img src="./screenshots/data_structure_class1.png" width="400" alt="data_structure_class1">
 
 
 #### ✅ 테스트 해보기
@@ -387,7 +387,7 @@ Cross 점수 < X 점수   →   결과: "X"
 Cross 점수 = X 점수   →   결과: "UNDECIDED"
 ```
 
-![판정흐름](./screenshots/판정흐름.png)
+<img src="./screenshots/판정흐름.png" width="400" alt="판정흐름">
 
 
 #### 💻 코드
@@ -707,7 +707,7 @@ def load_data(filepath: str) -> dict:
 ![json_loader](./screenshots/json_loader.png)
 
 <img src="./screenshots/데이터구조_2.png" width="600" alt="데이터구조_2">
-<img src="./screenshots/정규화_2.png" width="600" alt="정규화_2">
+
 ---
 
 
@@ -1027,7 +1027,7 @@ if __name__ == "__main__":
 
 ![main](./screenshots/main.png)
 
-<img src="./screenshots/데이터구조.png" width="600" alt="데이터구조">
+<img src="./screenshots/데이터구조.png" width="400" alt="데이터구조">
 
 <img src="./screenshots/모드구현_차이.png" width="600" alt="모드구현_차이">
 
