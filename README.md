@@ -64,6 +64,8 @@ AI가 그림을 인식할 때 **"필터"** 라는 도구를 사용합니다.
 ![mac_1](./screenshots/mac_1.png)
 ![Accumulate](./screenshots/Accumulate.png)
 
+<img src="./screenshots/mac_1.png" width="600" alt="mac_1">
+<img src="./screenshots/Accumulate.png" width="600" alt="Accumulate">
 
 ### 개념 2️⃣ : 왜 필터가 필요한가?
 
@@ -705,6 +707,9 @@ def load_data(filepath: str) -> dict:
 ![json_loader](./screenshots/json_loader.png)
 ![데이터구조_2](./screenshots/데이터구조_2.png)
 ![정규화](./screenshots/정규화.png)
+
+<img src="./screenshots/데이터구조_2.png" width="600" alt="데이터구조_2">
+<img src="./screenshots/정규화_2.png" width="600" alt="정규화">
 ---
 
 
@@ -1024,6 +1029,13 @@ if __name__ == "__main__":
 
 ![main](./screenshots/main.png)
 
+<img src="./screenshots/데이터구조.png" width="600" alt="데이터구조">
+
+<img src="./screenshots/모드구현_차이.png" width="600" alt="모드구현_차이">
+
+<img src="./screenshots/모드구현_2.png" width="600" alt="모드구현_2">
+
+
 ![데이터구조](./screenshots/데이터구조.png)
 
 ![모드구현_차이](./screenshots/모드구현_차이.png)
@@ -1070,6 +1082,8 @@ data.json 구조                     파이썬에서 접근하는 방법
 ❌ 틀린 접근:  filters["size_5"]          ← 변환 후에는 정수 키!
 ✅ 올바른 접근: filters[5]               ← 변환 후에는 정수 5 로 접근
 ```
+
+<img src="./screenshots/json오류.png" width="600" alt="json오류">
 
 ![json오류](./screenshots/json오류.png)
 
@@ -1279,6 +1293,13 @@ data.json 로딩 중...
   총 2개 | ✅ PASS: 2 | ❌ FAIL: 0
 ==================================================
 ```
+
+<img src="./screenshots/최종실행결과1.png" width="600" alt="최종실행결과1">
+
+<img src="./screenshots/최종실행결과2.png" width="600" alt="최종실행결과2">
+
+<img src="./screenshots/사용자입력_Test.png" width="600" alt="사용자입력_Test">
+
 
 ![최종실행결과1](./screenshots/최종실행결과1.png)
 ![최종실행결과2](./screenshots/최종실행결과2.png)
