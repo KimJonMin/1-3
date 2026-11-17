@@ -112,7 +112,7 @@ def mac(pattern, filter_):
     return score
 ```
 ![전체과정](./screenshots/전체과정.png)
-
+<img src="./screenshots/전체과정.png" width="400" alt="전체과정">
 ---
 
 
