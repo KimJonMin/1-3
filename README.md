@@ -356,7 +356,7 @@ def mac(filter_p: Pattern, input_p: Pattern) -> float:
 * 같은 위치의 숫자끼리 곱하고 모든 결과를 더하는 연산
 
 
-### 1. `calculate_score` 함수 동작 순서
+### `calculate_score` 함수 동작 순서
 * **`def calculate_score(...)`**: 점수 계산 함수를 선언합니다.
 * **`score = 0`**: 점수의 초기값을 `0`으로 설정합니다.
 * **`for i in range(5)`**: `0`부터 `4`까지 5개의 행을 반복합니다.
@@ -379,14 +379,13 @@ def mac(filter_p: Pattern, input_p: Pattern) -> float:
 * **이유**: MAC 연산은 두 행렬의 칸 수가 완벽하게 일치해야 합니다. *(예: 3x3 필터는 3x3 영역과만 계산 가능)*
 * **역할**: 크기가 다른 데이터를 넣었을 때 프로그램이 이상한 값을 내놓지 않도록 미리 에러를 발생시켜 방어합니다.
 ---
----
 
 ### 📊 Cross 필터와 실제 이미지 매칭 결과
 * **모양이 비슷하면?** `result` 값이 커집니다. *(특징 발견!)*
 * **모양이 다르면?** `result` 값이 작아집니다. *(특징 없음!)*
 
 ![mac](./screenshots/mac.png)
-<img src="./screenshots/파이프라인.png" width="400" alt="파이프라인">
+<img src="./screenshots/파이프라인.png" width="500" alt="파이프라인">
 ---
 
 ### STEP 3: `judge.py` - 판정
@@ -602,7 +601,7 @@ $n \times n$ 크기의 행렬 데이터를 사용자로부터 한 줄씩 입력�
 ```
 
 ![input_handler](./screenshots/input_handler.png)
-![라벨정규화](./screenshots/라벨정규화.png)
+<img src="./screenshots/라벨정규화.png" width="400" alt="라벨정규화">
 ---
 
 ### STEP 5: `json_loader.py` - 데이터 로드
