@@ -85,23 +85,26 @@ X     필터로 계산  →  X     점수: 1.0   ← 낮다!
        위치를 찾는 것입니다.
 
 ---
+
+---
+```
 MAC 연산 전체 흐름 (코드 구조 기준)
 
 입력(pattern) + 필터(filter_)
-        │
-        ▼  main.py:24-31  mac(pattern, filter_)
-   for i in range(n):
-     for j in range(n):
-       score += pattern[i][j] * filter_[i][j]   ← 위치별 곱셈
-        │
-        ▼
-   score 반환 (누적 합산 완료)
-        │
-        ▼  main.py:35-38  judge(score_cross, score_x)
-   |score_cross - score_x| < EPSILON → UNDECIDED
-   score_cross > score_x             → Cross
-   else          
-```
+       |
+       ▼  main.py:24-31  mac(pattern, filter_)
+for i in range(n):
+    for j in range(n):
+        score += pattern[i][j] * filter_[i][j]  ← 위치별 곱셈
+       |
+       ▼
+ score 반환 (누적 합산 완료)
+       |
+       ▼  main.py:35-38  judge(score_cross, score_x)
+|score_cross - score_x| < EPSILON → UNDECIDED
+score_cross > score_x      → Cross
+else
+
 # app/main.py:24-31
 def mac(pattern, filter_):
     score = 0.0
@@ -111,6 +114,7 @@ def mac(pattern, filter_):
             score += pattern[i][j] * filter_[i][j]
     return score
 ```
+
 <img src="./screenshots/전체과정.png" width="500" alt="전체과정">
 ---
 
@@ -131,6 +135,8 @@ JSON에 있는 값    →    프로그램 안에서 쓰는 값
     "x"          →           "X"
     "X"          →           "X"
 ```
+
+```
 ## 🔄 데이터 정규화 및 매핑 과정
 
 프로그램 외부(JSON 파일, DB, 사용자 입력 등)에서 들어오는 데이터는 형식이 제각각인 경우가 많습니다. 프로그램 내부 로직이 복잡해지는 것을 막고 일관성을 유지하기 위해, 이 다양한 값들을 약속된 하나의 표준 값으로 통일합니다.
@@ -144,15 +150,18 @@ JSON에 있는 값    →    프로그램 안에서 쓰는 값
 
 > **💡 핵심 포인트**
 > 외부의 다양한 표기 방식을 내부 로직에서 공통된 기준(`Cross`, `X`)으로 처리할 수 있도록 매핑해 주는 핵심 전처리 과정입니다.
+```
+---
 
+---
+```
+* 정규화 장점
+1. 데이터가 서로 다른 표현으로 들어와도 처리하기 쉽습니다.
+2. 프로그램이 데이터를 잘못 판단할 가능성을 줄입니다.
+3. 비교하거나 분류하는 작업이 간단해집니다.
+4. 프로그램 내부의 코드가 복잡해지는 것을 방지합니다.
 
-정규화 장점
-
-데이터가 서로 다른 표현으로 들어와도 처리하기 쉽습니다.
-프로그램이 데이터를 잘못 판단할 가능성을 줄입니다.
-비교하거나 분류하는 작업이 간단해집니다.
-프로그램 내부의 코드가 복잡해지는 것을 방지합니다.
-
+```
 ---
 
 ## 3. 파일 구조
@@ -169,7 +178,6 @@ mini_npu/
 ├── performance.py       ← 실행 시간 측정
 └── data.json            ← 테스트 데이터
 ```
-
 > 💡 **파일 작성 순서:**
 > `data_structure` → `mac` → `judge` → `input_handler` → `json_loader` → `performance` → `main`
 
@@ -227,7 +235,7 @@ mini_npu/
 ```python
 # data_structure.py
 
-
+```
 ![data_structure](./screenshots/data_structure.png)
 
 <img src="./screenshots/data_structure_class1.png" width="500" alt="data_structure_class1">
@@ -319,6 +327,7 @@ Cross 필터 (5×5):              Cross 패턴 입력:
 * **모양이 비슷하면?** `result` 값이 커집니다. *(특징 발견!)*
 * **모양이 다르면?** `result` 값이 작아집니다. *(특징 없음!)*
 
+```
 ![mac](./screenshots/mac.png)
 <img src="./screenshots/파이프라인.png" width="500" alt="파이프라인">
 ```
@@ -376,6 +385,7 @@ Cross 점수 = X 점수   →   결과: "UNDECIDED"
   Cross 점수 : 3.0
   X     점수 : 3.
 ```
+
 ![judge](./screenshots/judge.png)
 
 --- 
@@ -413,7 +423,6 @@ Cross 점수 = X 점수   →   결과: "UNDECIDED"
 ```python
 # input_handler.py
 
-
 ### 1. `get_size_input(valid_sizes)`
 사용자로부터 유효한 패턴 크기(예: `5, 13, 25`)를 올바르게 입력받을 때까지 반복 확인하는 함수입니다.
 * **안내 문자열 생성**: 전달받은 리스트를 `5, 13, 25` 형태의 문자열로 변환합니다.
@@ -430,11 +439,10 @@ $n \times n$ 크기의 행렬 데이터를 사용자로부터 한 줄씩 입력�
   * 모든 토큰을 실수(`float`)로 변환을 시도합니다.
   * 문자가 섞여 `ValueError`가 발생하면 `"△ 숫자만 입력하세요."`를 출력하고 재입력을 받습니다.
 
----
+```
 
 #### ✅ 입력 예시
 
-```
 패턴 크기를 입력하세요 (5, 13, 25): abc
   ⚠ 숫자를 입력하세요. (예: 5)
 
@@ -455,10 +463,10 @@ $n \times n$ 크기의 행렬 데이터를 사용자로부터 한 줄씩 입력�
   5행: 0 0 1 0 0
 ```
 
+```
 ![input_handler](./screenshots/input_handler.png)
 <img src="./screenshots/라벨정규화.png" width="400" alt="라벨정규화">
 ```
-
 ---
 
 ### STEP 5: `json_loader.py` - 데이터 로드
@@ -484,7 +492,6 @@ patterns → 패턴마다 Pattern 객체 + expected 라벨 생성
 ```python
 # json_loader.py
 
-
 ### 1. 라벨 정규화 테이블 및 함수 (`LABEL_MAP` & `normalize_label`)
 JSON 파일이나 사용자 입력에 따라 제각각 다를 수 있는 라벨 표기를 일관된 형태로 통일합니다.
 * **`LABEL_MAP` (딕셔너리)**:
@@ -502,13 +509,12 @@ JSON 파일이나 사용자 입력에 따라 제각각 다를 수 있는 라벨 
 * **2) 필터(`filters`) 변환**: 
   * 필터 키(예: `"size_5"`)를 `key.split("_")[1]` 방식으로 쪼개어 정수형 크기 `n`(예: `5`)으로 바꿉니다.
   * 각 크기별 리스트 데이터를 `Pattern.load_from_list()`를 통해 `Pattern` 객체로 변환하여 `filters[n]`에 저장합니다.
-
 ---
 
+```
 ![json_loader](./screenshots/json_loader.png)
 
 <img src="./screenshots/데이터구조_2.png" width="600" alt="데이터구조_2">
-
 ```
 ---
 
@@ -611,8 +617,11 @@ from data_structure import Pattern
 
 ---
 
+```
 ![모드구현](./screenshots/모두구현.png)
 ![모드구현실수](./screenshots/모두구현실수.png)
+
+
 
 # ── 모드 2: 수동 입력 검사 ──────────────────────────────────
 
@@ -665,7 +674,7 @@ from data_structure import Pattern
 ### 3. 프로그램 진입점
 * **`if __name__ == "__main__":`**: 파일이 직접 실행될 때 `main()` 함수가 자동으로 호출되도록 설정하는 표준 진입점입니다
 
-
+```
 ![main](./screenshots/main.png)
 
 <img src="./screenshots/데이터구조.png" width="400" alt="데이터구조">
