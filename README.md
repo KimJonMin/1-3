@@ -591,26 +591,23 @@ MAC 연산의 실행 속도를 반복 측정하여 평균 소요 시간(ms)을 �
 ```
 ---
 
-![모드구현](./screenshots/모두구현.png)
-![모드구현실수](./screenshots/모두구현실수.png)
+![모드구현](./screenshots/모드구현.png)
+![모드구현실수](./screenshots/모드구현실수.png)
 
 ---
 
+```text
 from json_loader    import load_data
 from mac            import mac
 from judge          import judge, check_pass_fail
 from input_handler  import get_size_input, get_matrix_input
 from performance    import measure_performance
 from data_structure import Pattern
+```
 
 # ── 모드 1: 자동 배치 검사 ──────────────────────────────────
 
-    # 최종 요약
-    print("\n" + "=" * 50)
-    print(f"  총 {total}개 | ✅ PASS: {passed} | ❌ FAIL: {failed}")
-    print("=" * 50)
-
-## ⚙️ 자동 배치 검사 함수 (`run_model1`)
+   ## ⚙️ 자동 배치 검사 함수 (`run_model1`)
 `data.json`에 정의된 모든 패턴을 자동으로 순회하며 MAC 연산을 수행하고, 정답 일치 여부(`PASS`/`FAIL`)를 검사해 최종 통계를 요약해 주는 함수입니다
 
 ### 📌 주요 동작 흐름
