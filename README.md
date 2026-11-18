@@ -40,13 +40,15 @@ AI가 그림을 인식할 때 **"필터"** 라는 도구를 사용합니다.
 
 ---
 
+---
 ## 2. 핵심 개념 3가지
 
 ### 개념 1️⃣ : MAC 연산이란?
-컴퓨터는 이미지를 숫자 배열로만 이해한다. 입력 패턴과 필터(기준 패턴)가 얼마나 유사한지 판단하는 방법이 MAC(Multiply-Accumulate) 연산이다.
-**MAC = Multiply(곱하기) + Accumulate(누적 더하기)**
- Multiply (곱하기): 두 행렬의 같은 위치에 있는 숫자끼리 곱합니다.
- Accumulate (더하기/누적): 그 곱한 결과들을 모두 하나로 합칩니다.
+컴퓨터는 이미지를 숫자 배열로만 이해합니다. 입력 패턴과 필터(기준 패턴)가 얼마나 유사한지 판단하는 핵심 원리가 바로 **MAC(Multiply-Accumulate) 연산**입니다.
+
+* **MAC = Multiply(곱하기) + Accumulate(누적 더하기)**
+* **Multiply (곱하기)**: 두 행렬의 같은 위치에 있는 숫자끼리 곱합니다.
+* **Accumulate (더하기/누적)**: 곱한 결과들을 모두 하나로 합쳐 최종 점수를 산출합니다.
 
 > 쉽게 말하면: **"같은 위치끼리 곱하고, 다 더한다"**
 
@@ -87,34 +89,6 @@ X     필터로 계산  →  X     점수: 1.0   ← 낮다!
 ---
 
 ---
-```
-MAC 연산 전체 흐름 (코드 구조 기준)
-
-입력(pattern) + 필터(filter_)
-       |
-       ▼  main.py:24-31  mac(pattern, filter_)
-for i in range(n):
-    for j in range(n):
-        score += pattern[i][j] * filter_[i][j]  ← 위치별 곱셈
-       |
-       ▼
- score 반환 (누적 합산 완료)
-       |
-       ▼  main.py:35-38  judge(score_cross, score_x)
-|score_cross - score_x| < EPSILON → UNDECIDED
-score_cross > score_x      → Cross
-else
-
-# app/main.py:24-31
-def mac(pattern, filter_):
-    score = 0.0
-    n = len(pattern)
-    for i in range(n):
-        for j in range(n):
-            score += pattern[i][j] * filter_[i][j]
-    return score
-```
-
 <img src="./screenshots/전체과정.png" width="500" alt="전체과정">
 
 
@@ -136,30 +110,27 @@ JSON에 있는 값    →    프로그램 안에서 쓰는 값
 ```
 
 ```
+
 ## 🔄 데이터 정규화 및 매핑 과정
 
 프로그램 외부(JSON 파일, DB, 사용자 입력 등)에서 들어오는 데이터는 형식이 제각각인 경우가 많습니다. 프로그램 내부 로직이 복잡해지는 것을 막고 일관성을 유지하기 위해, 이 다양한 값들을 약속된 하나의 표준 값으로 통일합니다.
 
 ### 📋 라벨 매핑 규칙
 
-| 입력 형태 (외부 데이터) | 정규화된 내부 표준 값 | 설명 |
-| :--- | :---: | :--- |
-| `+`, `cross`, `Cross`, `CROSS` | **`Cross`** | 외부에서 어떤 형태로 들어오든 첫 글자가 대문자인 `Cross`로 통일하여 인식합니다. |
-| `x`, `X` | **`X`** | 소문자 `x`와 대문자 `X`를 모두 대문자 `X` 하나로 통일합니다. |
+| 입력 형태 (외부 데이터)           | 정규화된 내부 표준 값 | 설명 |
+| `+`, `cross`, `Cross`, `CROSS` | **`Cross`**        | 외부에서 어떤 형태로 들어오든 첫 글자가 대문자인 `Cross`로 통일하여 인식합니다. |
+| `x`, `X`                       | **`X`**            | 소문자 `x`와 대문자 `X`를 모두 대문자 `X` 하나로 통일합니다. |
 
 > **💡 핵심 포인트**
 > 외부의 다양한 표기 방식을 내부 로직에서 공통된 기준(`Cross`, `X`)으로 처리할 수 있도록 매핑해 주는 핵심 전처리 과정입니다.
 ```
----
 
----
 ```
 * 정규화 장점
 1. 데이터가 서로 다른 표현으로 들어와도 처리하기 쉽습니다.
 2. 프로그램이 데이터를 잘못 판단할 가능성을 줄입니다.
 3. 비교하거나 분류하는 작업이 간단해집니다.
 4. 프로그램 내부의 코드가 복잡해지는 것을 방지합니다.
-
 ```
 ---
 
@@ -168,7 +139,7 @@ JSON에 있는 값    →    프로그램 안에서 쓰는 값
 ```
 mini_npu/
 │
-├── main.py              ← 프로그램 시작점 (여기서 실행!)
+├── main.py              ← 프로그램 시작점 (여기서 실행! : "python3 main.py")
 ├── data_structure.py    ← Pattern 클래스 (데이터 저장 방식)
 ├── mac.py               ← MAC 연산 함수
 ├── judge.py             ← 점수 비교 → 판정
@@ -181,7 +152,6 @@ mini_npu/
 > `data_structure` → `mac` → `judge` → `input_handler` → `json_loader` → `performance` → `main`
 
 ---
-
 
 ---
 ## 4. STEP별 코드 설명
@@ -210,12 +180,10 @@ mini_npu/
 └───────────┘
 
 위치 계산 공식: index = row × n + col
-예) row=1, col=2, n=3  →  index = 1×3+2 = 5  →  값: 6
-
-가장 중요한 공식: index = row × n + col
+예) row=1, n=3, col=2 →  index = 1×3+2 = 5  →  값: 6
 
 ```
- ## 🗺️ 2차원 행렬과 1차원 리스트의 주소 변환 (`row * n + col`)
+ ## 🗺️ 2차원 행렬과 1차원 리스트의 주소 변환 (가장 중요한 공식 : `index = row * n + col`)
 
 2D 행렬은 사람이 보기 편한 구조이고, 1D 리스트는 컴퓨터가 메모리에 저장하기 편한 구조입니다. 
 `row * n + col` 공식은 **2차원 지도를 보고 1차원 주소를 찾아가는 내비게이션**과 같습니다.
@@ -225,10 +193,6 @@ mini_npu/
 * **`n`**: 한 줄에 데이터가 몇 개 있는가? *(가로 너비)*
 * **`col`**: 그 줄에서 몇 번째 칸(열)에 있는가? *(0부터 시작)*
 * **`index`**: 1D(1차원) 배열에서의 최종 위치 번호
-
-> **💡 핵심 공식 요약**
-> `index = (row * n) + col`
-> 행렬의 좌표(row, col)를 컴퓨터가 한 줄로 쭉 늘어선 메모리 공간에서 정확히 몇 번째 칸인지 찾아낼 수 있는 변환 공식입니다.
 
 
 #### 💻 코드
@@ -241,21 +205,28 @@ mini_npu/
 
 <img src="./screenshots/data_structure_class1.png" width="500" alt="data_structure_class1">
 
+<img src="./screenshots/data_structure_class2.png" width="500" alt="data_structure_class2">
 
-#### ✅ 테스트 해보기
-
-```python
-p = Pattern(3)
-p.set(0, 0, 1.0)
-p.set(1, 1, 1.0)
-print(p.get(0, 0))      # 출력: 1.0
-print(p.get(0, 1))      # 출력: 0.0
-print(p.to_2d_list())
-# 출력: [[1.0, 0.0, 0.0],
-#        [0.0, 1.0, 0.0],
-#        [0.0, 0.0, 0.0]]
 ```
 
+```
+#### ✅ 테스트 해보기
+
+p = Pattern(3)         # 3x3 크기의 패턴 객체 생성
+p.set(0, 0, 1.0)       # (0행, 0열)에 1.0 저장
+p.set(1, 1, 1.0)       # (1행, 1열)에 1.0 저장
+
+print(p.get(0, 0))     # 출력: 1.0 (값 조회)
+print(p.get(0, 1))     # 출력: 0.0 (기본값)
+
+print(p.to_2d_list())  # 전체 데이터를 2차원 표 형태로 출력
+# 출력 결과:
+# [[1.0, 0.0, 0.0],
+#  [0.0, 1.0, 0.0],
+#  [0.0, 0.0, 0.0]]
+```
+
+```
 ![테스트코드렌더링](./screenshots/테스트코드렌더링.png)
 
 ---
@@ -304,6 +275,29 @@ Cross 필터 (5×5):              Cross 패턴 입력:
 ![mac](./screenshots/mac.png)
 <img src="./screenshots/파이프라인.png" width="500" alt="파이프라인">
 ```
+## 🧮 MAC 연산 함수 상세 분석 (`mac.py`)
+
+### 📌 코드 단계별 뜯어보기
+
+1. **안전장치**
+   * **코드**: `if filter_p.n != input_p.n:`
+   * **역할**: 연산하려는 두 패턴(필터와 입력)의 크기(가로세로 칸 수)가 다르면 에러(`ValueError`)를 발생시켜 프로그램이 이상한 값을 계산하지 않도록 미리 방어합니다. *(예: $3 \times 3$ 필터와 $5 \times 5$ 입력은 계산 불가)*
+
+2. **초기화 (13~14번 줄)**
+   * **`n = filter_p.n`**: 격자의 크기(예: `3`)를 변수에 담습니다.
+   * **`result = 0.0`**: 계산된 최종 점수를 담아둘 바구니(`result`)를 `0.0`으로 깨끗하게 비워둡니다.
+
+3. **이중 반복문과 MAC 연산**
+   * **반복문 (`for r in range(n): / for c in range(n):`)**: 표의 맨 위 왼쪽부터 맨 아래 오른쪽까지 모든 칸(행 `r`, 열 `c`)을 빠짐없이 하나씩 방문합니다.
+   * **`result += filter_p.get(r, c) * input_p.get(r, c)`**:
+     * **Multiply (곱하기)**: 필터의 특정 칸 숫자와 입력의 똑같은 위치 칸 숫자를 서로 곱합니다.
+     * **Accumulate (누적 더하기)**: 그 곱한 값들을 `result` 바구니에 차곡차곡 더해서 쌓습니다(`+=`).
+
+4. **결과 반환**
+   * **코드**: `return result`
+   * **역할**
+
+
 
 ### `calculate_score` 함수 동작 순서
 * **`def calculate_score(...)`**: 점수 계산 함수를 선언합니다.
