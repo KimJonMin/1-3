@@ -116,7 +116,6 @@ def mac(pattern, filter_):
 ```
 
 <img src="./screenshots/전체과정.png" width="500" alt="전체과정">
----
 
 
 ### 개념 3️⃣ : 라벨 정규화란?
@@ -183,6 +182,8 @@ mini_npu/
 
 ---
 
+
+---
 ## 4. STEP별 코드 설명
 
 ---
@@ -257,10 +258,10 @@ print(p.to_2d_list())
 
 ![테스트코드렌더링](./screenshots/테스트코드렌더링.png)
 
-
 ---
 
 ### STEP 2: `mac.py` - 핵심 연산
+---
 
 #### 🤔 이 함수가 하는 일
 
@@ -299,6 +300,11 @@ Cross 필터 (5×5):              Cross 패턴 입력:
 ```python
 # mac.py
 
+```
+![mac](./screenshots/mac.png)
+<img src="./screenshots/파이프라인.png" width="500" alt="파이프라인">
+```
+
 ### `calculate_score` 함수 동작 순서
 * **`def calculate_score(...)`**: 점수 계산 함수를 선언합니다.
 * **`score = 0`**: 점수의 초기값을 `0`으로 설정합니다.
@@ -327,10 +333,6 @@ Cross 필터 (5×5):              Cross 패턴 입력:
 * **모양이 비슷하면?** `result` 값이 커집니다. *(특징 발견!)*
 * **모양이 다르면?** `result` 값이 작아집니다. *(특징 없음!)*
 
-```
-![mac](./screenshots/mac.png)
-<img src="./screenshots/파이프라인.png" width="500" alt="파이프라인">
-```
 
 ---
 
@@ -343,14 +345,16 @@ Cross 필터 (5×5):              Cross 패턴 입력:
 
 ```
 Cross 점수  vs  X 점수
-──────────────────────────────────────────
+─────────────────────────────────────────
+
 Cross 점수 > X 점수   →   결과: "Cross"
 Cross 점수 < X 점수   →   결과: "X"
 Cross 점수 = X 점수   →   결과: "UNDECIDED"
-```
 
+```
 <img src="./screenshots/판정흐름.png" width="400" alt="판정흐름">
 
+```
 
 #### 💻 코드
 
@@ -423,6 +427,11 @@ Cross 점수 = X 점수   →   결과: "UNDECIDED"
 ```python
 # input_handler.py
 
+```
+![input_handler](./screenshots/input_handler.png)
+<img src="./screenshots/라벨정규화.png" width="400" alt="라벨정규화">
+```
+
 ### 1. `get_size_input(valid_sizes)`
 사용자로부터 유효한 패턴 크기(예: `5, 13, 25`)를 올바르게 입력받을 때까지 반복 확인하는 함수입니다.
 * **안내 문자열 생성**: 전달받은 리스트를 `5, 13, 25` 형태의 문자열로 변환합니다.
@@ -463,10 +472,6 @@ $n \times n$ 크기의 행렬 데이터를 사용자로부터 한 줄씩 입력�
   5행: 0 0 1 0 0
 ```
 
-```
-![input_handler](./screenshots/input_handler.png)
-<img src="./screenshots/라벨정규화.png" width="400" alt="라벨정규화">
-```
 ---
 
 ### STEP 5: `json_loader.py` - 데이터 로드
@@ -492,6 +497,12 @@ patterns → 패턴마다 Pattern 객체 + expected 라벨 생성
 ```python
 # json_loader.py
 
+```
+![json_loader](./screenshots/json_loader.png)
+
+<img src="./screenshots/데이터구조_2.png" width="600" alt="데이터구조_2">
+```
+
 ### 1. 라벨 정규화 테이블 및 함수 (`LABEL_MAP` & `normalize_label`)
 JSON 파일이나 사용자 입력에 따라 제각각 다를 수 있는 라벨 표기를 일관된 형태로 통일합니다.
 * **`LABEL_MAP` (딕셔너리)**:
@@ -511,11 +522,6 @@ JSON 파일이나 사용자 입력에 따라 제각각 다를 수 있는 라벨 
   * 각 크기별 리스트 데이터를 `Pattern.load_from_list()`를 통해 `Pattern` 객체로 변환하여 `filters[n]`에 저장합니다.
 ---
 
-```
-![json_loader](./screenshots/json_loader.png)
-
-<img src="./screenshots/데이터구조_2.png" width="600" alt="데이터구조_2">
-```
 ---
 
 ### STEP 6: `performance.py` - 성능 측정
@@ -537,12 +543,15 @@ MAC 연산을 100번 반복 실행
 ```python
 # performance.py
 
-MAC 연산의 실행 속도를 반복 측정하여 평균 소요 시간(ms)을 반환하는 함수입니다[cite: 4].
+<img src="./screenshots/performance.png" width="600" alt="performance">
+```
+
+MAC 연산의 실행 속도를 반복 측정하여 평균 소요 시간(ms)을 반환하는 함수입니다
 
 ### 📌 매개변수 (Parameters)
 * **`filter_p`**: 연산에 사용할 필터 패턴 객체
 * **`input_p`**: 연산에 사용할 입력 패턴 객체
-* **`repeat`**: 성능 측정 정확도를 높이기 위한 반복 횟수 *(기본값: 100회)*[cite: 4]
+* **`repeat`**: 성능 측정 정확도를 높이기 위한 반복 횟수 *(기본값: 100회)
 
 ---
 
@@ -565,7 +574,6 @@ MAC 연산의 실행 속도를 반복 측정하여 평균 소요 시간(ms)을 �
 평균 시간: 0.002341 ms
 ```
 
-```
 ---
 
 ### STEP 7: `main.py` - 전체 조립
@@ -582,13 +590,18 @@ MAC 연산의 실행 속도를 반복 측정하여 평균 소요 시간(ms)을 �
 ```python
 # main.py
 
+```
+![모드구현](./screenshots/모두구현.png)
+![모드구현실수](./screenshots/모두구현실수.png)
+
+---
+
 from json_loader    import load_data
 from mac            import mac
 from judge          import judge, check_pass_fail
 from input_handler  import get_size_input, get_matrix_input
 from performance    import measure_performance
 from data_structure import Pattern
-
 
 # ── 모드 1: 자동 배치 검사 ──────────────────────────────────
 
@@ -617,12 +630,6 @@ from data_structure import Pattern
 
 ---
 
-```
-![모드구현](./screenshots/모두구현.png)
-![모드구현실수](./screenshots/모두구현실수.png)
-
-
-
 # ── 모드 2: 수동 입력 검사 ──────────────────────────────────
 
 ## 🕹️ 수동 입력 검사 함수 (`run_mode2`)
@@ -647,7 +654,6 @@ from data_structure import Pattern
 ---
 
 # ── 메인 함수 ───────────────────────────────────────────────
-```
 
 ## 🚀 메인 함수 및 프로그램 진입점 (`main`)
 
@@ -674,7 +680,6 @@ from data_structure import Pattern
 ### 3. 프로그램 진입점
 * **`if __name__ == "__main__":`**: 파일이 직접 실행될 때 `main()` 함수가 자동으로 호출되도록 설정하는 표준 진입점입니다
 
-```
 ![main](./screenshots/main.png)
 
 <img src="./screenshots/데이터구조.png" width="400" alt="데이터구조">
