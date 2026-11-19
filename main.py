@@ -16,10 +16,10 @@
 import json
 import time
 
+# ============================================================
+#  섹션 1. data_structure  
+# ============================================================
 
-# ============================================================
-#  섹션 1. data_structure  (원본: data_structure.py)
-# ============================================================
 class Pattern:
     """
     N×N 2D 배열을 1D float 리스트로 관리하는 클래스
@@ -57,11 +57,13 @@ class Pattern:
         ]
 
     def __repr__(self):
+        """파이썬이 자동으로 부르는 특별한 메서드
+        객체를 repr()로 보거나, 인터랙티브 환경에서 출력할 때 자주 사용"""
         return f"Pattern(n={self.n})"
 
 
 # ============================================================
-#  섹션 2. json_loader  (원본: json_loader.py)
+#  섹션 2. json_loader  
 # ============================================================
 
 # ── 라벨 정규화 테이블 ──────────────────────────────────────
@@ -132,8 +134,9 @@ def load_data(filepath: str) -> dict:
 
 
 # ============================================================
-#  섹션 3. mac  (원본: mac.py)
+#  섹션 3. mac  
 # ============================================================
+
 def mac(filter_p: Pattern, input_p: Pattern) -> float:
     """
     MAC(Multiply-Accumulate) 연산
@@ -155,8 +158,9 @@ def mac(filter_p: Pattern, input_p: Pattern) -> float:
 
 
 # ============================================================
-#  섹션 4. judge  (원본: judge.py)
+#  섹션 4. judge  
 # ============================================================
+
 def judge(score_cross: float, score_x: float, epsilon: float = 1e-9) -> str:
     """
     두 점수를 비교해 판정 결과를 반환합니다
@@ -185,8 +189,9 @@ def check_pass_fail(judge_result: str, expected_label: str) -> str:
 
 
 # ============================================================
-#  섹션 5. input_handler  (원본: input_handler.py)
+#  섹션 5. input_handler  
 # ============================================================
+
 def get_size_input(valid_sizes: list) -> int:
     """
     유효한 크기(5, 13, 25)를 입력받을 때까지 반복합니다
@@ -246,11 +251,9 @@ def get_matrix_input(n: int) -> list:
 
 
 # ============================================================
-#  섹션 6. performance  (원본 파일 미제공 → 새로 작성)
-#  main.py의 호출 방식에 맞춤:
-#     measure_performance(filter_p, input_p, repeat=100) -> 평균 시간(ms)
-#  이미 만들어 둔 performance.py가 있으면 이 섹션을 교체하세요.
+#  섹션 6. performance  
 # ============================================================
+
 def measure_performance(filter_p: Pattern, input_p: Pattern, repeat: int = 100) -> float:
     """
     MAC 연산을 repeat회 반복 실행하여 1회 평균 시간(ms)을 반환합니다
@@ -266,10 +269,11 @@ def measure_performance(filter_p: Pattern, input_p: Pattern, repeat: int = 100) 
 
 
 # ============================================================
-#  섹션 7. main  (원본: main.py)
+#  섹션 7. main  
 # ============================================================
 
 # ── 성능 분석 표 출력 ────────────────────────────────────────
+
 def print_performance_table(data: dict):
     """
     3×3 포함 크기별 MAC 연산 시간 표를 출력합니다
@@ -296,7 +300,7 @@ def print_performance_table(data: dict):
     # 5×5, 13×13, 25×25
     for n in sorted(filters.keys()):
         f_cross = filters[n]["Cross"]
-        # 해당 크기의 첫 번째 패턴 찾기
+                # 해당 크기의 첫 번째 패턴 찾기
         sample_pat = None
         for item in data["patterns"]:
             if item["pattern"].n == n:
@@ -312,6 +316,7 @@ def print_performance_table(data: dict):
 
 
 # ── 모드 1: 사용자 입력 (3×3) ───────────────────────────────
+
 def run_mode1():
     """
     3×3 필터 A, B와 패턴을 직접 입력받아 MAC 연산 및 판정
