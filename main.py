@@ -254,7 +254,7 @@ def get_matrix_input(n: int) -> list:
 #  섹션 6. performance  
 # ============================================================
 
-def measure_performance(filter_p: Pattern, input_p: Pattern, repeat: int = 100) -> float:
+def measure_performance(filter_p: Pattern, input_p: Pattern, repeat: int = 10) -> float:
     """
     MAC 연산을 repeat회 반복 실행하여 1회 평균 시간(ms)을 반환합니다
     """
@@ -423,7 +423,7 @@ def run_mode2(data: dict):
         pass_fail = check_pass_fail(result, expected)
 
         # 성능 측정
-        avg_ms = measure_performance(f_cross, pat, repeat=100)
+        avg_ms = measure_performance(f_cross, pat, repeat=10)
 
         # 결과 출력
         icon = "✅" if pass_fail == "PASS" else "❌"
